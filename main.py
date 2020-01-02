@@ -82,6 +82,10 @@ class D2API:
                 token_file_json = json.loads(jsonfile.read())
                 self.access_token = token_file_json["access_token"]
                 self.refresh_token = token_file_json["refresh_token"]
+                self.request_header = {
+                    "X-API-Key": self.api_key,
+                    "Authorization": self.access_token
+                }
                 test_code = self.GetDestinyManifest(testing=True)
                 if test_code != 200:
                     #If the file is fine and we've gotten this far, it's likely that the access code has expired and needs refreshing
@@ -128,3 +132,20 @@ class D2API:
         with open("./db/MobileClanBannerDatabase.zip", "wb") as mobile_clan_banner_file:
             mobile_clan_banner_file.write(requests.get(mobile_clan_banner_path, headers=self.request_header).content)
         self.UnzipFile("./db/MobileClanBannerDatabase.zip")
+
+    def SearchDestinyPlayer(self, displayname,  platform):
+        if platform == "Xbox" or platform == "XBL":
+            platform = "1"
+        elif platform == "PSN" or platform == "Playstation":
+            platform = "2"
+        elif platform == "Steam":
+            platform = "3"
+        elif platform == "Blizzard":
+            platform = "4"
+        elif platform == "Stadia":
+            platform = "5"
+        else:
+            platform = "-1"
+
+        search_request = requests.get(self.root_endpoint+"/Destiny2/SearchDestinyPlayer/"+platform+"/"+displayname, headers=self.request_header)
+        return search_request.json()
