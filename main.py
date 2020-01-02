@@ -124,3 +124,7 @@ class D2API:
         with open("./db/MobileWorldContentDatabase.zip", "wb") as mobile_world_content_file:
             mobile_world_content_file.write(requests.get(mobile_world_content_url, headers=self.request_header).content)
         self.UnzipFile("./db/MobileWorldContentDatabase.zip")
+        mobile_clan_banner_path = "https://bungie.net"+manifest_json["Response"]["mobileClanBannerDatabasePath"]
+        with open("./db/MobileClanBannerDatabase.zip", "wb") as mobile_clan_banner_file:
+            mobile_clan_banner_file.write(requests.get(mobile_clan_banner_path, headers=self.request_header).content)
+        self.UnzipFile("./db/MobileClanBannerDatabase.zip")
