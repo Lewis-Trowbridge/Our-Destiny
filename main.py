@@ -15,6 +15,8 @@ class D2API:
     refresh_token = ""
     root_endpoint = "https://www.bungie.net/Platform"
     request_header = {}
+    bungie_membership_id = ""
+    destiny_membership_id = ""
 
     def __init__(self, api_key_in, client_id_in, client_secret_in):
         self.api_key = api_key_in
@@ -86,6 +88,7 @@ class D2API:
                     "X-API-Key": self.api_key,
                     "Authorization": self.access_token
                 }
+                self.bungie_membership_id = token_file_json["membership_id"]
                 test_code = self.GetDestinyManifest(testing=True)
                 if test_code != 200:
                     #If the file is fine and we've gotten this far, it's likely that the access code has expired and needs refreshing
@@ -133,19 +136,55 @@ class D2API:
             mobile_clan_banner_file.write(requests.get(mobile_clan_banner_path, headers=self.request_header).content)
         self.UnzipFile("./db/MobileClanBannerDatabase.zip")
 
-    def SearchDestinyPlayer(self, displayname,  platform):
-        if platform == "Xbox" or platform == "XBL":
-            platform = "1"
-        elif platform == "PSN" or platform == "Playstation":
-            platform = "2"
-        elif platform == "Steam":
-            platform = "3"
-        elif platform == "Blizzard":
-            platform = "4"
-        elif platform == "Stadia":
-            platform = "5"
+    def GetMembershipTypeEnum(self, platform):
+        if not str.isnumeric(platform):
+            if platform == "Xbox" or platform == "XBL":
+                return "1"
+            elif platform == "PSN" or platform == "Playstation":
+                return "2"
+            elif platform == "Steam":
+                return "3"
+            elif platform == "Blizzard":
+                return "4"
+            elif platform == "Stadia":
+                return "5"
+            else:
+                return "-1"
         else:
-            platform = "-1"
+            return platform
 
+    def GetDestinyComponentTypeEnum(self, component):
+        enumDict = {"None": "0", "Profiles": "100", "VendorReceipts": "101", "ProfileInventories": "102", "ProfileCurrencies": "103",
+                    "ProfileProgression": "104", "PlatformSilver": "105"}
+        if not str.isnumeric(component):
+            try:
+                return enumDict[component]
+            except KeyError:
+                return 0
+
+    def GetMyBungieNetUser(self):
+        search_request = requests.get(self.root_endpoint + "/User/GetBungieNetUserById/"+self.bungie_membership_id, headers=self.request_header)
+        return search_request.json()
+
+    def GetMyDestinyId(self, platform):
+        platform = self.GetMembershipTypeEnum(platform)
+        search_request = requests.get(self.root_endpoint + "/User/GetMembershipsById/"+self.bungie_membership_id+"/"+platform, headers=self.request_header)
+        for membership in search_request.json()["Response"]["destinyMemberships"]:
+            if str(membership["membershipType"]) == platform:
+                self.destiny_membership_id = membership["membershipId"]
+
+    def SearchDestinyPlayer(self, displayname,  platform):
+        platform = self.GetMembershipTypeEnum(platform)
         search_request = requests.get(self.root_endpoint+"/Destiny2/SearchDestinyPlayer/"+platform+"/"+displayname, headers=self.request_header)
+        return search_request.json()
+
+    def GetMyProfile(self, platform, array_of_enums):
+        if self.destiny_membership_id == "":
+            self.GetMyDestinyId(platform)
+        platform = self.GetMembershipTypeEnum(platform)
+        translated_enums = ""
+        for enum in array_of_enums:
+            translated_enums = translated_enums + self.GetDestinyComponentTypeEnum(enum) + ","
+        params = {"components": translated_enums}
+        search_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id, headers=self.request_header, params=params)
         return search_request.json()
