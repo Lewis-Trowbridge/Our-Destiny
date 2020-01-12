@@ -7,7 +7,7 @@ import zipfile
 import os
 
 
-class D2API:
+class d2client:
     api_key = ""
     client_id = ""
     client_secret = ""
@@ -76,7 +76,7 @@ class D2API:
         self.refresh_token = token_request_json["refresh_token"]
         self.request_header = {"Authorization": "Bearer " + self.access_token,
                                "X-API-Key": self.api_key}
-        with open("token.json", "w") as jsonfile:
+        with open("./token.json", "w") as jsonfile:
             jsonfile.write(json.dumps(token_request_json))
 
     def Authenticate(self):
@@ -86,7 +86,7 @@ class D2API:
     def TestAccessToken(self):
         try:
             # Tests to see if a token has already been saved
-            with open("./token.json") as jsonfile:
+            with open("token.json") as jsonfile:
                 token_file_json = json.loads(jsonfile.read())
                 self.access_token = token_file_json["access_token"]
                 self.refresh_token = token_file_json["refresh_token"]
@@ -125,7 +125,7 @@ class D2API:
                     dbinfo_json = {}
                 dbinfo_json[dbtype] = DBZip.namelist()[0]
             # Reopens the file in write mode as this will overwrite the contents of the file immediately, which we do not want
-            with open("./db/dbinfo.json", "w") as dbinfo_json_file:
+            with open("/db/dbinfo.json", "w") as dbinfo_json_file:
                 dbinfo_json_file.write(json.dumps(dbinfo_json))
         os.remove(zipfile_path)
 
@@ -148,7 +148,7 @@ class D2API:
         mobile_asset_url = "https://bungie.net" + manifest_json["Response"]["mobileAssetContentPath"]
         if not os.path.exists("./db"):
             os.mkdir("db")
-        with open("./db/dbinfo.json", "w") as dbinfo_json:
+        with open("/db/dbinfo.json", "w") as dbinfo_json:
             dbinfo_json.write("")
         with open("./db/MobileAssetContent.zip", "wb") as mobile_asset_file:
             mobile_asset_file.write(requests.get(mobile_asset_url, headers=self.request_header).content)
@@ -183,16 +183,6 @@ class D2API:
                 return "-1"
         else:
             return platform
-
-    def GetDestinyComponentTypeEnum(self, component):
-        enumDict = {"None": "0", "Profiles": "100", "VendorReceipts": "101", "ProfileInventories": "102",
-                    "ProfileCurrencies": "103",
-                    "ProfileProgression": "104", "PlatformSilver": "105"}
-        if not str.isnumeric(component):
-            try:
-                return enumDict[component]
-            except KeyError:
-                return 0
 
     def GetFromDB(self, hashnum, table, database="mobileWorldContent"):
         result_json = ""
@@ -243,11 +233,17 @@ class D2API:
         if self.destiny_membership_id == "":
             self.GetMyDestinyId(platform)
         platform = self.GetMembershipTypeEnum(platform)
-        translated_enums = ""
+        collated_enums = ""
         for enum in array_of_enums:
-            translated_enums = translated_enums + self.GetDestinyComponentTypeEnum(enum) + ","
-        params = {"components": translated_enums}
+            collated_enums = collated_enums + enum + ","
+        params = {"components": collated_enums}
         search_request = requests.get(
             self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + self.destiny_membership_id,
             headers=self.request_header, params=params)
         return search_request.json()
+
+    def GetMyCharacters(self, platform):
+        search_json = self.GetMyProfile(platform, ["Characters"])
+        return search_json
+
+    ##def GetCharacterObject(self, platform, character_num):
