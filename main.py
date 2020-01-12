@@ -6,6 +6,7 @@ import sqlite3
 import zipfile
 import os
 
+
 class D2API:
     api_key = ""
     client_id = ""
@@ -31,7 +32,7 @@ class D2API:
     def GetAuthCodeURL(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"
         params = {
-            "response_type":"code",
+            "response_type": "code",
             "client_id": self.client_id,
             "state": secrets.token_urlsafe(32)
         }
@@ -39,7 +40,8 @@ class D2API:
         return auth_request.url
 
     def GetAuthCodeFromURL(self, auth_request_url):
-        auth_code_url = input("Please click on this link, and then paste back in the URL you get:\n" + auth_request_url + "\n").strip()
+        auth_code_url = input(
+            "Please click on this link, and then paste back in the URL you get:\n" + auth_request_url + "\n").strip()
         parser = urlparse.urlparse(auth_code_url)
         self.auth_code = parser.query.split("&")[0].replace("code=", "").strip()
 
@@ -72,8 +74,8 @@ class D2API:
     def StoreAccessToken(self, token_request_json):
         self.access_token = token_request_json["access_token"]
         self.refresh_token = token_request_json["refresh_token"]
-        self.request_header = {"Authorization": "Bearer "+self.access_token,
-                               "X-API-Key":self.api_key}
+        self.request_header = {"Authorization": "Bearer " + self.access_token,
+                               "X-API-Key": self.api_key}
         with open("token.json", "w") as jsonfile:
             jsonfile.write(json.dumps(token_request_json))
 
@@ -83,7 +85,7 @@ class D2API:
 
     def TestAccessToken(self):
         try:
-            #Tests to see if a token has already been saved
+            # Tests to see if a token has already been saved
             with open("./token.json") as jsonfile:
                 token_file_json = json.loads(jsonfile.read())
                 self.access_token = token_file_json["access_token"]
@@ -95,17 +97,17 @@ class D2API:
                 self.bungie_membership_id = token_file_json["membership_id"]
                 test_code = self.GetDestinyManifest(testing=True)
                 if test_code != 200:
-                    #If the file is fine and we've gotten this far, it's likely that the access code has expired and needs refreshing
+                    # If the file is fine and we've gotten this far, it's likely that the access code has expired and needs refreshing
                     self.RefreshAccessToken()
         except FileNotFoundError:
-            #If no token is already saved, get a new one
+            # If no token is already saved, get a new one
             self.Authenticate()
         except json.JSONDecodeError:
-            #If for some reason there is an error with the JSON file, refresh the file
+            # If for some reason there is an error with the JSON file, refresh the file
             self.Authenticate()
 
     def GetDestinyManifest(self, testing=False):
-        url = self.root_endpoint+"/Destiny2/Manifest"
+        url = self.root_endpoint + "/Destiny2/Manifest"
         api_request = requests.get(url, headers=self.request_header)
         if testing == False:
             return api_request.json()
@@ -115,14 +117,14 @@ class D2API:
     def UnzipDBZip(self, zipfile_path, dbtype):
         with zipfile.ZipFile(zipfile_path) as DBZip:
             DBZip.extractall("./db")
-            #Opens the file to read its contents and add to the JSON
+            # Opens the file to read its contents and add to the JSON
             with open("./db/dbinfo.json", "r") as dbinfo_json_file:
                 try:
                     dbinfo_json = json.loads(dbinfo_json_file.read())
                 except json.JSONDecodeError:
                     dbinfo_json = {}
                 dbinfo_json[dbtype] = DBZip.namelist()[0]
-            #Reopens the file in write mode as this will overwrite the contents of the file immediately, which we do not want
+            # Reopens the file in write mode as this will overwrite the contents of the file immediately, which we do not want
             with open("./db/dbinfo.json", "w") as dbinfo_json_file:
                 dbinfo_json_file.write(json.dumps(dbinfo_json))
         os.remove(zipfile_path)
@@ -143,7 +145,7 @@ class D2API:
 
     def DownloadAllDestinyDB(self):
         manifest_json = self.GetDestinyManifest()
-        mobile_asset_url = "https://bungie.net"+manifest_json["Response"]["mobileAssetContentPath"]
+        mobile_asset_url = "https://bungie.net" + manifest_json["Response"]["mobileAssetContentPath"]
         if not os.path.exists("./db"):
             os.mkdir("db")
         with open("./db/dbinfo.json", "w") as dbinfo_json:
@@ -151,15 +153,15 @@ class D2API:
         with open("./db/MobileAssetContent.zip", "wb") as mobile_asset_file:
             mobile_asset_file.write(requests.get(mobile_asset_url, headers=self.request_header).content)
         self.UnzipDBZip("./db/MobileAssetContent.zip", "mobileAssetContent")
-        mobile_asset_gear_url = "https://bungie.net"+manifest_json["Response"]["mobileGearAssetDataBases"][2]["path"]
+        mobile_asset_gear_url = "https://bungie.net" + manifest_json["Response"]["mobileGearAssetDataBases"][2]["path"]
         with open("./db/MobileGearAssetDatabase.zip", "wb") as mobile_asset_gear_file:
             mobile_asset_gear_file.write(requests.get(mobile_asset_gear_url, headers=self.request_header).content)
         self.UnzipDBZip("./db/MobileGearAssetDatabase.zip", "mobileGearAssetDataBase")
-        mobile_world_content_url = "https://bungie.net"+manifest_json["Response"]["mobileWorldContentPaths"]["en"]
+        mobile_world_content_url = "https://bungie.net" + manifest_json["Response"]["mobileWorldContentPaths"]["en"]
         with open("./db/MobileWorldContentDatabase.zip", "wb") as mobile_world_content_file:
             mobile_world_content_file.write(requests.get(mobile_world_content_url, headers=self.request_header).content)
         self.UnzipDBZip("./db/MobileWorldContentDatabase.zip", "mobileWorldContent")
-        mobile_clan_banner_path = "https://bungie.net"+manifest_json["Response"]["mobileClanBannerDatabasePath"]
+        mobile_clan_banner_path = "https://bungie.net" + manifest_json["Response"]["mobileClanBannerDatabasePath"]
         with open("./db/MobileClanBannerDatabase.zip", "wb") as mobile_clan_banner_file:
             mobile_clan_banner_file.write(requests.get(mobile_clan_banner_path, headers=self.request_header).content)
         self.UnzipDBZip("./db/MobileClanBannerDatabase.zip", "mobileClanBannerDatabase")
@@ -183,7 +185,8 @@ class D2API:
             return platform
 
     def GetDestinyComponentTypeEnum(self, component):
-        enumDict = {"None": "0", "Profiles": "100", "VendorReceipts": "101", "ProfileInventories": "102", "ProfileCurrencies": "103",
+        enumDict = {"None": "0", "Profiles": "100", "VendorReceipts": "101", "ProfileInventories": "102",
+                    "ProfileCurrencies": "103",
                     "ProfileProgression": "104", "PlatformSilver": "105"}
         if not str.isnumeric(component):
             try:
@@ -193,40 +196,47 @@ class D2API:
 
     def GetFromDB(self, hashnum, table, database="mobileWorldContent"):
         result_json = ""
-        #Converts the hash from a JSON file to a column value for the SQL database
+        # Converts the hash from a JSON file to a column value for the SQL database
         hashnum = int(hashnum)
         if (hashnum & (1 << (32 - 1))) != 0:
             hashnum = hashnum - (1 << 32)
         if database == "mobileWorldContent":
-            result_text = self.world_database.execute("SELECT json FROM "+table+" WHERE id = " + str(hashnum)).fetchone()[0]
+            result_text = \
+            self.world_database.execute("SELECT json FROM " + table + " WHERE id = " + str(hashnum)).fetchone()[0]
             result_json = json.loads(result_text)
         elif database == "mobileGearAssetDataBase":
-            result_text = self.gear_database.execute("SELECT json FROM "+table+" WHERE id = " + str(hashnum)).fetchone()[0]
+            result_text = \
+            self.gear_database.execute("SELECT json FROM " + table + " WHERE id = " + str(hashnum)).fetchone()[0]
             result_json = json.loads(result_text)
         elif database == "mobileAssetContent":
-            result_text = self.asset_database.execute("SELECT json FROM "+table+" WHERE id = "+str(hashnum)).fetchone()[0]
+            result_text = \
+            self.asset_database.execute("SELECT json FROM " + table + " WHERE id = " + str(hashnum)).fetchone()[0]
             result_json = json.loads(result_text)
         elif database == "mobileClanBannerDatabase":
-            result_text = self.clan_banner_database.execute("SELECT json FROM "+table+" WHERE id = "+str(hashnum)).fetchone()[0]
+            result_text = \
+            self.clan_banner_database.execute("SELECT json FROM " + table + " WHERE id = " + str(hashnum)).fetchone()[0]
             result_json = json.loads(result_text)
         return result_json
 
-
-
     def GetMyBungieNetUser(self):
-        search_request = requests.get(self.root_endpoint + "/User/GetBungieNetUserById/"+self.bungie_membership_id, headers=self.request_header)
+        search_request = requests.get(self.root_endpoint + "/User/GetBungieNetUserById/" + self.bungie_membership_id,
+                                      headers=self.request_header)
         return search_request.json()
 
     def GetMyDestinyId(self, platform):
         platform = self.GetMembershipTypeEnum(platform)
-        search_request = requests.get(self.root_endpoint + "/User/GetMembershipsById/"+self.bungie_membership_id+"/"+platform, headers=self.request_header)
+        search_request = requests.get(
+            self.root_endpoint + "/User/GetMembershipsById/" + self.bungie_membership_id + "/" + platform,
+            headers=self.request_header)
         for membership in search_request.json()["Response"]["destinyMemberships"]:
             if str(membership["membershipType"]) == platform:
                 self.destiny_membership_id = membership["membershipId"]
 
-    def SearchDestinyPlayer(self, displayname,  platform):
+    def SearchDestinyPlayer(self, displayname, platform):
         platform = self.GetMembershipTypeEnum(platform)
-        search_request = requests.get(self.root_endpoint+"/Destiny2/SearchDestinyPlayer/"+platform+"/"+displayname, headers=self.request_header)
+        search_request = requests.get(
+            self.root_endpoint + "/Destiny2/SearchDestinyPlayer/" + platform + "/" + displayname,
+            headers=self.request_header)
         return search_request.json()
 
     def GetMyProfile(self, platform, array_of_enums):
@@ -237,5 +247,7 @@ class D2API:
         for enum in array_of_enums:
             translated_enums = translated_enums + self.GetDestinyComponentTypeEnum(enum) + ","
         params = {"components": translated_enums}
-        search_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id, headers=self.request_header, params=params)
+        search_request = requests.get(
+            self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + self.destiny_membership_id,
+            headers=self.request_header, params=params)
         return search_request.json()
