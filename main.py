@@ -17,6 +17,10 @@ class D2API:
     request_header = {}
     bungie_membership_id = ""
     destiny_membership_id = ""
+    asset_database = ""
+    gear_database = ""
+    world_database = ""
+    clan_banner_database = ""
 
     def __init__(self, api_key_in, client_id_in, client_secret_in):
         self.api_key = api_key_in
@@ -108,33 +112,58 @@ class D2API:
         else:
             return api_request.status_code
 
-    def UnzipFile(self, zipfile_path):
+    def UnzipDBZip(self, zipfile_path, dbtype):
         with zipfile.ZipFile(zipfile_path) as DBZip:
-            print(DBZip.namelist())
             DBZip.extractall("./db")
+            #Opens the file to read its contents and add to the JSON
+            with open("./db/dbinfo.json", "r") as dbinfo_json_file:
+                try:
+                    dbinfo_json = json.loads(dbinfo_json_file.read())
+                except json.JSONDecodeError:
+                    dbinfo_json = {}
+                dbinfo_json[dbtype] = DBZip.namelist()[0]
+            #Reopens the file in write mode as this will overwrite the contents of the file immediately, which we do not want
+            with open("./db/dbinfo.json", "w") as dbinfo_json_file:
+                dbinfo_json_file.write(json.dumps(dbinfo_json))
         os.remove(zipfile_path)
 
+    def ConnectAllDestinyDB(self):
+        common_path = "./db/"
+        with open(common_path + "dbinfo.json") as dbinfo_file:
+            dbinfo = json.loads(dbinfo_file.read())
+
+        dbconnect = sqlite3.connect(common_path + dbinfo["mobileAssetContent"])
+        self.asset_database = dbconnect.cursor()
+        dbconnect = sqlite3.connect(common_path + dbinfo["mobileGearAssetDataBase"])
+        self.gear_database = dbconnect.cursor()
+        dbconnect = sqlite3.connect(common_path + dbinfo["mobileWorldContent"])
+        self.world_database = dbconnect.cursor()
+        dbconnect = sqlite3.connect(common_path + dbinfo["mobileClanBannerDatabase"])
+        self.clan_banner_database = dbconnect.cursor()
 
     def DownloadAllDestinyDB(self):
         manifest_json = self.GetDestinyManifest()
         mobile_asset_url = "https://bungie.net"+manifest_json["Response"]["mobileAssetContentPath"]
         if not os.path.exists("./db"):
             os.mkdir("db")
+        with open("./db/dbinfo.json", "w") as dbinfo_json:
+            dbinfo_json.write("")
         with open("./db/MobileAssetContent.zip", "wb") as mobile_asset_file:
             mobile_asset_file.write(requests.get(mobile_asset_url, headers=self.request_header).content)
-        self.UnzipFile("./db/MobileAssetContent.zip")
+        self.UnzipDBZip("./db/MobileAssetContent.zip", "mobileAssetContent")
         mobile_asset_gear_url = "https://bungie.net"+manifest_json["Response"]["mobileGearAssetDataBases"][2]["path"]
         with open("./db/MobileGearAssetDatabase.zip", "wb") as mobile_asset_gear_file:
             mobile_asset_gear_file.write(requests.get(mobile_asset_gear_url, headers=self.request_header).content)
-        self.UnzipFile("./db/MobileGearAssetDatabase.zip")
+        self.UnzipDBZip("./db/MobileGearAssetDatabase.zip", "mobileGearAssetDataBase")
         mobile_world_content_url = "https://bungie.net"+manifest_json["Response"]["mobileWorldContentPaths"]["en"]
         with open("./db/MobileWorldContentDatabase.zip", "wb") as mobile_world_content_file:
             mobile_world_content_file.write(requests.get(mobile_world_content_url, headers=self.request_header).content)
-        self.UnzipFile("./db/MobileWorldContentDatabase.zip")
+        self.UnzipDBZip("./db/MobileWorldContentDatabase.zip", "mobileWorldContent")
         mobile_clan_banner_path = "https://bungie.net"+manifest_json["Response"]["mobileClanBannerDatabasePath"]
         with open("./db/MobileClanBannerDatabase.zip", "wb") as mobile_clan_banner_file:
             mobile_clan_banner_file.write(requests.get(mobile_clan_banner_path, headers=self.request_header).content)
-        self.UnzipFile("./db/MobileClanBannerDatabase.zip")
+        self.UnzipDBZip("./db/MobileClanBannerDatabase.zip", "mobileClanBannerDatabase")
+        self.ConnectAllDestinyDB()
 
     def GetMembershipTypeEnum(self, platform):
         if not str.isnumeric(platform):
@@ -161,6 +190,28 @@ class D2API:
                 return enumDict[component]
             except KeyError:
                 return 0
+
+    def GetFromDB(self, hashnum, table, database="mobileWorldContent"):
+        result_json = ""
+        #Converts the hash from a JSON file to a column value for the SQL database
+        hashnum = int(hashnum)
+        if (hashnum & (1 << (32 - 1))) != 0:
+            hashnum = hashnum - (1 << 32)
+        if database == "mobileWorldContent":
+            result_text = self.world_database.execute("SELECT json FROM "+table+" WHERE id = " + str(hashnum)).fetchone()[0]
+            result_json = json.loads(result_text)
+        elif database == "mobileGearAssetDataBase":
+            result_text = self.gear_database.execute("SELECT json FROM "+table+" WHERE id = " + str(hashnum)).fetchone()[0]
+            result_json = json.loads(result_text)
+        elif database == "mobileAssetContent":
+            result_text = self.asset_database.execute("SELECT json FROM "+table+" WHERE id = "+str(hashnum)).fetchone()[0]
+            result_json = json.loads(result_text)
+        elif database == "mobileClanBannerDatabase":
+            result_text = self.clan_banner_database.execute("SELECT json FROM "+table+" WHERE id = "+str(hashnum)).fetchone()[0]
+            result_json = json.loads(result_text)
+        return result_json
+
+
 
     def GetMyBungieNetUser(self):
         search_request = requests.get(self.root_endpoint + "/User/GetBungieNetUserById/"+self.bungie_membership_id, headers=self.request_header)
