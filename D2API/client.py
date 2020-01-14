@@ -27,18 +27,22 @@ class d2client:
         self.client_id = client_id_in
         self.client_secret = client_secret_in
         self.TestAccessToken()
+        self.ConnectAllDestinyDB()
 
     def Database(self):
         return D2API.d2database(self.api_key, self.client_id, self.client_secret)
 
     def GetCharacterObject(self, platform, char_num):
-        char_json = self.GetMyCharacters(self.GetMembershipTypeEnum(platform))["Response"]["characters"]["data"]
+        all_json = self.GetMyCharacters(self.GetMembershipTypeEnum(platform))["Response"]
+        char_info_json = all_json["characters"]["data"]
+        char_inv_json = all_json["characterInventories"]["data"]
         count = 0
-        for char_id in char_json.keys():
+        for char_id in char_info_json.keys():
             if count == char_num:
-                char_json = char_json[char_id]
+                char_info_json = char_info_json[char_id]
+                char_inv_json = char_inv_json[char_id]["items"]
             count += 1
-        return D2API.d2character(self.api_key, self.client_id, self.client_secret, char_json)
+        return D2API.d2character(self.api_key, self.client_id, self.client_secret, char_info_json, char_inv_json)
 
     def GetAuthCodeURL(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"
@@ -162,6 +166,7 @@ class d2client:
         hashnum = int(hashnum)
         if (hashnum & (1 << (32 - 1))) != 0:
             hashnum = hashnum - (1 << 32)
+        table = "Destiny"+table+"Definition"
         if database == "mobileWorldContent":
             result_text = \
             self.world_database.execute("SELECT json FROM " + table + " WHERE id = " + str(hashnum)).fetchone()[0]
@@ -215,5 +220,5 @@ class d2client:
         return search_request.json()
 
     def GetMyCharacters(self, platform):
-        search_json = self.GetMyProfile(platform, ["Characters"])
+        search_json = self.GetMyProfile(platform, ["Characters", "CharacterInventories"])
         return search_json
