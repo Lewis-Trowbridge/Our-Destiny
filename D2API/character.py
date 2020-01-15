@@ -16,8 +16,9 @@ class d2character(d2client):
     gender = ""
     cclass = ""
     inventory = []
+    equipped = []
 
-    def __init__(self, api_key_in, client_id_in, client_secret_in, character_info_json, character_inventory_json):
+    def __init__(self, api_key_in, client_id_in, client_secret_in, character_info_json, character_inventory_json, character_equipped_json):
         super().__init__(api_key_in, client_id_in, client_secret_in)
         self.character_id = character_info_json["characterId"]
         self.membership_type = character_info_json["membershipType"]
@@ -32,3 +33,4 @@ class d2character(d2client):
         self.gender = self.GetFromDB(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
         self.cclass = self.GetFromDB(character_info_json["classHash"], "Class")["displayProperties"]["name"]
         self.inventory = character_inventory_json
+        self.equipped = character_equipped_json

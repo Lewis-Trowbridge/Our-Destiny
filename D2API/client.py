@@ -36,13 +36,15 @@ class d2client:
         all_json = self.GetMyCharacters(self.GetMembershipTypeEnum(platform))["Response"]
         char_info_json = all_json["characters"]["data"]
         char_inv_json = all_json["characterInventories"]["data"]
+        char_equip_json = all_json["characterEquipment"]["data"]
         count = 0
         for char_id in char_info_json.keys():
             if count == char_num:
                 char_info_json = char_info_json[char_id]
                 char_inv_json = char_inv_json[char_id]["items"]
+                char_equip_json = char_equip_json[char_id]["items"]
             count += 1
-        return D2API.d2character(self.api_key, self.client_id, self.client_secret, char_info_json, char_inv_json)
+        return D2API.d2character(self.api_key, self.client_id, self.client_secret, char_info_json, char_inv_json, char_equip_json)
 
     def GetAuthCodeURL(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"
@@ -220,5 +222,5 @@ class d2client:
         return search_request.json()
 
     def GetMyCharacters(self, platform):
-        search_json = self.GetMyProfile(platform, ["Characters", "CharacterInventories"])
+        search_json = self.GetMyProfile(platform, ["Characters", "CharacterInventories", "CharacterEquipment"])
         return search_json
