@@ -44,7 +44,7 @@ class d2client:
                 char_inv_json = char_inv_json[char_id]["items"]
                 char_equip_json = char_equip_json[char_id]["items"]
             count += 1
-        return D2API.d2character(self.api_key, self.client_id, self.client_secret, char_info_json, char_inv_json, char_equip_json)
+        return D2API.d2character(self, char_info_json, char_inv_json, char_equip_json)
 
     def GetAuthCodeURL(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"

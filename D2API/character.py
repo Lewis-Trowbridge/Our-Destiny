@@ -1,8 +1,9 @@
 import requests
-from D2API import d2client
+import D2API
 
 
-class d2character(d2client):
+class d2character():
+    client_object = ""
     character_id = ""
     membership_type = ""
     light = 0
@@ -18,8 +19,8 @@ class d2character(d2client):
     inventory = []
     equipped = []
 
-    def __init__(self, api_key_in, client_id_in, client_secret_in, character_info_json, character_inventory_json, character_equipped_json):
-        super().__init__(api_key_in, client_id_in, client_secret_in)
+    def __init__(self, client_object_in, character_info_json, character_inventory_json, character_equipped_json):
+        self.client_object = client_object_in
         self.character_id = character_info_json["characterId"]
         self.membership_type = character_info_json["membershipType"]
         self.light = character_info_json["light"]
@@ -29,8 +30,16 @@ class d2character(d2client):
         self.discipline = character_info_json["stats"]["1735777505"]
         self.intellect = character_info_json["stats"]["144602215"]
         self.strength = character_info_json["stats"]["4244567218"]
-        self.race = self.GetFromDB(character_info_json["raceHash"], "Race")["displayProperties"]["name"]
-        self.gender = self.GetFromDB(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
-        self.cclass = self.GetFromDB(character_info_json["classHash"], "Class")["displayProperties"]["name"]
-        self.inventory = character_inventory_json
+        self.race = self.client_object.GetFromDB(character_info_json["raceHash"], "Race")["displayProperties"]["name"]
+        self.gender = self.client_object.GetFromDB(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
+        self.cclass = self.client_object.GetFromDB(character_info_json["classHash"], "Class")["displayProperties"]["name"]
+        inventory_objects = []
+        for item in character_inventory_json:
+            inventory_objects.append(D2API.d2item(item, self))
+        #self.inventory = character_inventory_json
         self.equipped = character_equipped_json
+
+    def TestMe(self):
+        print(self.client_object.access_token)
+    def TestItem(self):
+        return D2API.d2item(self.equipped[0], self)
