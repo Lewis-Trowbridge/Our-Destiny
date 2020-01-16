@@ -36,10 +36,14 @@ class d2character():
         inventory_objects = []
         for item in character_inventory_json:
             inventory_objects.append(D2API.d2item(item, self))
-        #self.inventory = character_inventory_json
-        self.equipped = character_equipped_json
+        self.inventory = inventory_objects
+        equipped_objects = []
+        for item in character_equipped_json:
+            equipped_objects.append(D2API.d2item(item, self))
+        self.equipped = equipped_objects
+        pass
 
-    def TestMe(self):
-        print(self.client_object.access_token)
-    def TestItem(self):
-        return D2API.d2item(self.equipped[0], self)
+    def GetEquippedItemByName(self, item_name):
+        for item in self.equipped:
+            if item.name == item_name:
+                return item
