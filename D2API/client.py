@@ -146,6 +146,7 @@ class d2client:
         self.clan_banner_database = dbconnect.cursor()
 
     def GetMembershipTypeEnum(self, platform):
+        platform = str(platform)
         if not str.isnumeric(platform):
             if platform == "Xbox" or platform == "XBL":
                 return "1"
@@ -224,3 +225,11 @@ class d2client:
     def GetMyCharacters(self, platform):
         search_json = self.GetMyProfile(platform, ["Characters", "CharacterInventories", "CharacterEquipment"])
         return search_json
+
+    def GetInstancedItem(self, platform, instance_id):
+        platform = self.GetMembershipTypeEnum(platform)
+        params = {
+            "components": "ItemStats"
+        }
+        item_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id+"/Item/"+instance_id, params=params, headers=self.request_header)
+        return item_request.json()["Response"]

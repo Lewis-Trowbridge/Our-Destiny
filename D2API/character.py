@@ -3,21 +3,6 @@ import D2API
 
 
 class d2character():
-    client_object = ""
-    character_id = ""
-    membership_type = ""
-    light = 0
-    mobility = 0
-    resilience = 0
-    recovery = 0
-    discipline = 0
-    intellect = 0
-    strength = 0
-    race = ""
-    gender = ""
-    cclass = ""
-    inventory = []
-    equipped = []
 
     def __init__(self, client_object_in, character_info_json, character_inventory_json, character_equipped_json):
         self.client_object = client_object_in
@@ -41,9 +26,13 @@ class d2character():
         for item in character_equipped_json:
             equipped_objects.append(D2API.d2item(item, self))
         self.equipped = equipped_objects
-        pass
 
     def GetEquippedItemByName(self, item_name):
         for item in self.equipped:
+            if item.name == item_name:
+                return item
+
+    def GetInventoryItemByName(self, item_name):
+        for item in self.inventory:
             if item.name == item_name:
                 return item
