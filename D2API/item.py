@@ -9,6 +9,11 @@ class d2item():
         item_data_json = self.owner_object.client_object.GetFromDB(item_request_json["itemHash"], "InventoryItem")
         self.description = item_data_json["displayProperties"]["description"]
         self.name = item_data_json["displayProperties"]["name"]
+        self.type = item_data_json["itemTypeDisplayName"]
+        try:
+            self.tier = item_data_json["inventory"]["tierTypeName"]
+        except KeyError:
+            self.tier = None
         if item_data_json["displayProperties"]["hasIcon"]:
             self.icon_url = "https://www.bungie.net" + item_data_json["displayProperties"]["icon"]
         try:
