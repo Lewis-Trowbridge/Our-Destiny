@@ -3,7 +3,9 @@
 class d2item():
 
     def __init__(self, item_request_json, d2characterobject):
-        self.instanced_item = False
+        self.is_equipped = False
+        self.can_equip = False
+        self.is_instanced_item = False
         self.stats = {}
         self.owner_object = d2characterobject
         item_data_json = self.owner_object.client_object.GetFromDB(item_request_json["itemHash"], "InventoryItem")
@@ -37,8 +39,11 @@ class d2item():
     def BecomeInstanced(self):
         if self.instance_id is not None:
             item_instance_json = self.owner_object.client_object.GetInstancedItem(self.owner_object.membership_type, self.instance_id)
+            self.can_equip = item_instance_json["instance"]["data"]["canEquip"]
+            self.is_equipped = item_instance_json["instance"]["data"]["isEquipped"]
             stat_hashes = item_instance_json["stats"]["data"]["stats"].keys()
             for stat_hash in stat_hashes:
                 self.stats[self.owner_object.client_object.GetFromDB(stat_hash, "Stat")["displayProperties"]["name"]] = item_instance_json["stats"]["data"]["stats"][stat_hash]["value"]
+            self.is_instanced_item = True
         else:
             raise Exception("Item does not have an instance ID")

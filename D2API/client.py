@@ -109,7 +109,7 @@ class d2client:
                 self.refresh_token = token_file_json["refresh_token"]
                 self.request_header = {
                     "X-API-Key": self.api_key,
-                    "Authorization": self.access_token
+                    "Authorization": "Bearer " + self.access_token
                 }
                 self.bungie_membership_id = token_file_json["membership_id"]
                 test_code = self.GetDestinyManifest(testing=True)
@@ -229,7 +229,7 @@ class d2client:
     def GetInstancedItem(self, platform, instance_id):
         platform = self.GetMembershipTypeEnum(platform)
         params = {
-            "components": "ItemStats"
+            "components": "ItemInstances,ItemStats"
         }
         item_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id+"/Item/"+instance_id, params=params, headers=self.request_header)
         return item_request.json()["Response"]

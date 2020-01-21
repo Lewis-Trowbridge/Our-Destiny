@@ -36,3 +36,15 @@ class d2character():
         for item in self.inventory:
             if item.name == item_name:
                 return item
+
+    def EquipItem(self, item_to_equip):
+        if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
+            data = {
+                    "itemId": item_to_equip.instance_id,
+                    "characterId": self.character_id,
+                    "membershipType": self.membership_type
+            }
+            equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItem/", json=data, headers=self.client_object.request_header)
+            return equip_request.json()
+        else:
+            raise Exception("Item cannot be equipped")
