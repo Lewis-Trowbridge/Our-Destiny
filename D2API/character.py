@@ -37,6 +37,12 @@ class d2character():
             if item.name == item_name:
                 return item
 
+    def GetEqippedItemByIndex(self, item_index):
+        return self.inventory[item_index]
+
+    def GetInventoryItemByIndex(self, item_index):
+        return self.inventory[item_index]
+
     def EquipItem(self, item_to_equip):
         if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
             data = {
