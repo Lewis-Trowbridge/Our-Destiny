@@ -37,6 +37,14 @@ class d2character():
             if item.name == item_name:
                 return item
 
+    def GetItemByName(self, item_name):
+        item = self.GetEquippedItemByName(item_name)
+        if item is not None:
+            return item
+        else:
+            item = self.GetInventoryItemByName(item_name)
+            return item
+
     def GetInstancedEquippedItemByName(self, item_name):
         item = self.GetEquippedItemByName(item_name)
         item.BecomeInstanced()
@@ -46,6 +54,17 @@ class d2character():
         item = self.GetInventoryItemByName(item_name)
         item.BecomeInstanced()
         return item
+
+    def GetInstancedItemByName(self, item_name):
+        item = self.GetEquippedItemByName(item_name)
+        if item is not None:
+            item.BecomeInstanced()
+            return item
+        else:
+            item = self.GetInventoryItemByName(item_name)
+            if item is not None:
+                item.BecomeInstanced()
+                return item
 
     def GetEqippedItemByIndex(self, item_index):
         return self.inventory[item_index]
