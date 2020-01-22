@@ -37,6 +37,16 @@ class d2character():
             if item.name == item_name:
                 return item
 
+    def GetInstancedEquippedItemByName(self, item_name):
+        item = self.GetEquippedItemByName(item_name)
+        item.BecomeInstanced()
+        return item
+
+    def GetInstancedInventoryItemByName(self, item_name):
+        item = self.GetInventoryItemByName(item_name)
+        item.BecomeInstanced()
+        return item
+
     def GetEqippedItemByIndex(self, item_index):
         return self.inventory[item_index]
 
@@ -54,3 +64,18 @@ class d2character():
             return equip_request.json()
         else:
             raise Exception("Item cannot be equipped")
+
+    def EquipItems(self, array_of_items_to_equip):
+        item_ids = []
+        for item_to_equip in array_of_items_to_equip:
+            if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
+                item_ids.append(item_to_equip.instance_id)
+            else:
+                raise Exception(item_to_equip.name + "cannot be equipped")
+        data = {
+            "itemIds": item_ids,
+            "characterId": self.character_id,
+            "membershipType": self.membership_type
+        }
+        equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItems/", json=data, headers=self.client_object.request_header)
+        return equip_request.json()
