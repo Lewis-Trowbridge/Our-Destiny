@@ -7,6 +7,7 @@ class d2item():
         self.can_equip = False
         self.is_instanced_item = False
         self.stats = {}
+        self.attack = None
         self.owner_object = d2characterobject
         item_data_json = self.owner_object.client_object.GetFromDB(item_request_json["itemHash"], "InventoryItem")
         self.description = item_data_json["displayProperties"]["description"]
@@ -39,6 +40,7 @@ class d2item():
     def BecomeInstanced(self):
         if self.instance_id is not None:
             item_instance_json = self.owner_object.client_object.GetInstancedItem(self.owner_object.membership_type, self.instance_id)
+            self.attack = item_instance_json["instance"]["data"]["primaryStat"]["value"]
             self.can_equip = item_instance_json["instance"]["data"]["canEquip"]
             self.is_equipped = item_instance_json["instance"]["data"]["isEquipped"]
             try:
