@@ -297,7 +297,7 @@ class d2client:
     def GetInstancedItem(self, platform, instance_id):
         platform = self.GetMembershipTypeEnum(platform)
         params = {
-            "components": "ItemInstances,ItemStats"
+            "components": "ItemInstances,ItemStats,ItemPerks"
         }
         item_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id+"/Item/"+instance_id, params=params, headers=self.request_header)
         return item_request.json()["Response"]
