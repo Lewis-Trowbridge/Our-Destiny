@@ -41,9 +41,12 @@ class d2item():
             item_instance_json = self.owner_object.client_object.GetInstancedItem(self.owner_object.membership_type, self.instance_id)
             self.can_equip = item_instance_json["instance"]["data"]["canEquip"]
             self.is_equipped = item_instance_json["instance"]["data"]["isEquipped"]
-            stat_hashes = item_instance_json["stats"]["data"]["stats"].keys()
-            for stat_hash in stat_hashes:
-                self.stats[self.owner_object.client_object.GetFromDB(stat_hash, "Stat")["displayProperties"]["name"]] = item_instance_json["stats"]["data"]["stats"][stat_hash]["value"]
+            try:
+                stat_hashes = item_instance_json["stats"]["data"]["stats"].keys()
+                for stat_hash in stat_hashes:
+                    self.stats[self.owner_object.client_object.GetFromDB(stat_hash, "Stat")["displayProperties"]["name"]] = item_instance_json["stats"]["data"]["stats"][stat_hash]["value"]
+            except KeyError:
+                self.stats = {}
             self.is_instanced_item = True
         else:
             raise Exception("Item does not have an instance ID")
