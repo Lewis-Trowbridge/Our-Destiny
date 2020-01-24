@@ -15,9 +15,9 @@ class d2character():
         self.discipline = character_info_json["stats"]["1735777505"]
         self.intellect = character_info_json["stats"]["144602215"]
         self.strength = character_info_json["stats"]["4244567218"]
-        self.race = self.client_object.GetFromDB(character_info_json["raceHash"], "Race")["displayProperties"]["name"]
-        self.gender = self.client_object.GetFromDB(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
-        self.cclass = self.client_object.GetFromDB(character_info_json["classHash"], "Class")["displayProperties"]["name"]
+        self.race = self.client_object.get_from_db(character_info_json["raceHash"], "Race")["displayProperties"]["name"]
+        self.gender = self.client_object.get_from_db(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
+        self.cclass = self.client_object.get_from_db(character_info_json["classHash"], "Class")["displayProperties"]["name"]
         inventory_objects = []
         for item in character_inventory_json:
             inventory_objects.append(D2API.d2item(item, self))
@@ -27,52 +27,52 @@ class d2character():
             equipped_objects.append(D2API.d2item(item, self))
         self.equipped = equipped_objects
 
-    def GetEquippedItemByName(self, item_name):
+    def get_equipped_item_by_name(self, item_name):
         for item in self.equipped:
             if item.name == item_name:
                 return item
 
-    def GetInventoryItemByName(self, item_name):
+    def get_inventory_item_by_name(self, item_name):
         for item in self.inventory:
             if item.name == item_name:
                 return item
 
-    def GetItemByName(self, item_name):
-        item = self.GetEquippedItemByName(item_name)
+    def get_item_by_name(self, item_name):
+        item = self.get_equipped_item_by_name(item_name)
         if item is not None:
             return item
         else:
-            item = self.GetInventoryItemByName(item_name)
+            item = self.get_inventory_item_by_name(item_name)
             return item
 
-    def GetInstancedEquippedItemByName(self, item_name):
-        item = self.GetEquippedItemByName(item_name)
-        item.BecomeInstanced()
+    def get_instanced_equipped_item_by_name(self, item_name):
+        item = self.get_equipped_item_by_name(item_name)
+        item.become_instanced()
         return item
 
-    def GetInstancedInventoryItemByName(self, item_name):
-        item = self.GetInventoryItemByName(item_name)
-        item.BecomeInstanced()
+    def get_instanced_inventory_item_by_name(self, item_name):
+        item = self.get_inventory_item_by_name(item_name)
+        item.become_instanced()
         return item
 
-    def GetInstancedItemByName(self, item_name):
-        item = self.GetEquippedItemByName(item_name)
+    def get_instanced_item_by_name(self, item_name):
+        item = self.get_equipped_item_by_name(item_name)
         if item is not None:
-            item.BecomeInstanced()
+            item.become_instanced()
             return item
         else:
-            item = self.GetInventoryItemByName(item_name)
+            item = self.get_inventory_item_by_name(item_name)
             if item is not None:
-                item.BecomeInstanced()
+                item.become_instanced()
                 return item
 
-    def GetEqippedItemByIndex(self, item_index):
+    def get_equipped_item_by_index(self, item_index):
         return self.inventory[item_index]
 
-    def GetInventoryItemByIndex(self, item_index):
+    def get_inventory_item_by_index(self, item_index):
         return self.inventory[item_index]
 
-    def EquipItem(self, item_to_equip):
+    def equip_item(self, item_to_equip):
         if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
             data = {
                     "itemId": item_to_equip.instance_id,
@@ -84,7 +84,7 @@ class d2character():
         else:
             raise Exception("Item cannot be equipped")
 
-    def EquipItems(self, array_of_items_to_equip):
+    def equip_items(self, array_of_items_to_equip):
         item_ids = []
         for item_to_equip in array_of_items_to_equip:
             if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
