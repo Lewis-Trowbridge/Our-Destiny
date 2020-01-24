@@ -1,4 +1,4 @@
-# Destiny 2 API Python
+# Our Destiny
 ## First off, let me say that this is by no means finished.
 Now that that's out of the way, why don't we get started?
 
@@ -10,5 +10,16 @@ This was born from my curiosity and love for the game - as much as I feel like I
 calling this a "passion project", that is what this is. I love a lot of things about Destiny, and one of those is the
 open access to your own data, so I decided to see what I could do with my baseline knowledge of Python, and here we are.
 
-## Where are you planning to go?
+## Where are you planning to go with this?
 Well first, I've got to properly implement all of the endpoints in the API, and from there, I don't really know I guess?
+
+For a more detailed list:
+
+* Implement the rest of the "Destiny2" endpoints
+* Implement the "GroupV2" endpoints
+* Implement the "User" endpoints
+* Implement the "Fireteam" endpoints
+* Implement the "Forum" endpoints
+
+The exact form of these implementations is something I'm going to decide on when I reach that point - until then I'm
+more than willing to hear suggestions or any other feedback in an issue.
