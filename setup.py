@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name='Destiny-2-API-Python',
-    version='0.001a0',
-    packages=['D2API'],
+    name='Our Destiny',
+    version='0.0a0',
+    packages=['ourdestiny'],
     url='https://github.com/Lewis-Trowbridge/Destiny-2-API-Python',
     license='MIT',
     author='Lewis Trowbridge',

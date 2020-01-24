@@ -5,7 +5,7 @@ import sqlite3
 import urllib.parse as urlparse
 import zipfile
 import requests
-import D2API
+import ourdestiny
 
 
 class d2client:
@@ -43,7 +43,7 @@ class d2client:
                 char_inv_json = char_inv_json[char_id]["items"]
                 char_equip_json = char_equip_json[char_id]["items"]
             count += 1
-        return D2API.d2character(self, char_info_json, char_inv_json, char_equip_json)
+        return ourdestiny.d2character(self, char_info_json, char_inv_json, char_equip_json)
 
     def get_auth_code_url(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"

@@ -1,5 +1,5 @@
 import requests
-import D2API
+import ourdestiny
 
 
 class d2character():
@@ -20,11 +20,11 @@ class d2character():
         self.cclass = self.client_object.get_from_db(character_info_json["classHash"], "Class")["displayProperties"]["name"]
         inventory_objects = []
         for item in character_inventory_json:
-            inventory_objects.append(D2API.d2item(item, self))
+            inventory_objects.append(ourdestiny.d2item(item, self))
         self.inventory = inventory_objects
         equipped_objects = []
         for item in character_equipped_json:
-            equipped_objects.append(D2API.d2item(item, self))
+            equipped_objects.append(ourdestiny.d2item(item, self))
         self.equipped = equipped_objects
 
     def get_equipped_item_by_name(self, item_name):
