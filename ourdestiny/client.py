@@ -174,8 +174,6 @@ class d2client:
     def download_all_destiny_db(self):
         manifest_json = self.get_destiny_manifest()
         mobile_asset_url = "https://bungie.net" + manifest_json["Response"]["mobileAssetContentPath"]
-        if not os.path.exists("./db"):
-            os.mkdir("db")
         with open("./db/dbinfo.json", "w") as dbinfo_json:
             dbinfo_json.write("")
         with open("./db/MobileAssetContent.zip", "wb") as mobile_asset_file:
@@ -199,10 +197,13 @@ class d2client:
             mobile_clan_banner_file.write(
                 requests.get(mobile_clan_banner_path, headers=self.request_header).content)
         self.unzip_db_zip("./db/MobileClanBannerDatabase.zip", "mobileClanBannerDatabase")
-        self.connect_all_destiny_db()
 
     def connect_all_destiny_db(self):
-        self.check_for_destiny_db_update()
+        if os.path.exists("./db"):
+            self.check_for_destiny_db_update()
+        else:
+            os.mkdir("db")
+            self.download_all_destiny_db()
         common_path = "./db/"
         with open(common_path + "dbinfo.json", "r") as dbinfo_file:
             dbinfo = json.loads(dbinfo_file.read())
