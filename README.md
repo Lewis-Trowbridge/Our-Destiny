@@ -15,6 +15,9 @@ Well first, I've got to properly implement all of the endpoints in the API, and 
 
 For a more detailed list:
 
+* Redo the authentication process to make it more usable in GUI designs
+*  Maybe get a better solution to instanced items if we can think of one
+
 * Implement the rest of the "Destiny2" endpoints
 * Implement the "GroupV2" endpoints
 * Implement the "User" endpoints
