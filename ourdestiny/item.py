@@ -21,7 +21,7 @@ class d2item():
         if item_data_json["displayProperties"]["hasIcon"]:
             self.icon_url = "https://www.bungie.net" + item_data_json["displayProperties"]["icon"]
         try:
-            self.screenshot_url = "https://bungie.net" + item_data_json["screenshot"]
+            self.screenshot_url = "https://www.bungie.net" + item_data_json["screenshot"]
         except KeyError:
             self.screenshot_url = None
         try:
@@ -66,7 +66,5 @@ class d2item():
                     self.perks.append(perk_dict)
             except KeyError:
                 pass
-
-
         else:
             raise Exception("Item does not have an instance ID")

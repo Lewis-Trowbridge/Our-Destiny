@@ -26,3 +26,12 @@ For a more detailed list:
 
 The exact form of these implementations is something I'm going to decide on when I reach that point - until then I'm
 more than willing to hear suggestions or any other feedback in an issue.
+
+## General usage
+```python
+import ourdestiny
+myClient = ourdestiny.d2client("API_KEY", "CLIENT_ID", "CLIENT_SECRET")
+guardian = myClient.get_character_object("PLATFORM", 0)
+supremacy = guardian.get_instanced_item_by_name("The Supremacy")
+guardian.equip_item(supremacy)
+```
