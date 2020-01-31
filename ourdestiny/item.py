@@ -11,6 +11,7 @@ class d2item():
         self.attack = None
         self.owner_object = d2characterobject
         item_data_json = self.owner_object.client_object.get_from_db(item_request_json["itemHash"], "InventoryItem")
+        self.bucket_info = self.owner_object.client_object.get_from_db(item_request_json["bucketHash"], "InventoryBucket")
         self.description = item_data_json["displayProperties"]["description"]
         self.name = item_data_json["displayProperties"]["name"]
         self.type = item_data_json["itemTypeDisplayName"]
@@ -60,7 +61,7 @@ class d2item():
                     perk_json = self.owner_object.client_object.get_from_db(perk["perkHash"], "SandboxPerk")
                     perk_dict = {"name": perk_json["displayProperties"]["name"], "description": perk_json["displayProperties"]["description"], "isActive": perk["isActive"], "isVisible": perk["visible"]}
                     if perk_json["displayProperties"]["hasIcon"]:
-                        perk_dict["icon"] = "https://bungie.net" + perk_json["displayProperties"]["icon"]
+                        perk_dict["icon"] = "https://www.bungie.net" + perk_json["displayProperties"]["icon"]
                     else:
                         perk_dict["icon"] = ""
                     self.perks.append(perk_dict)
