@@ -10,7 +10,8 @@ class d2item():
         self.perks = []
         self.attack = None
         self.owner_object = d2characterobject
-        item_data_json = self.owner_object.client_object.get_from_db(item_request_json["itemHash"], "InventoryItem")
+        self.item_hash = item_request_json["itemHash"]
+        item_data_json = self.owner_object.client_object.get_from_db(self.item_hash, "InventoryItem")
         self.bucket_info = self.owner_object.client_object.get_from_db(item_request_json["bucketHash"], "InventoryBucket")
         self.description = item_data_json["displayProperties"]["description"]
         self.name = item_data_json["displayProperties"]["name"]

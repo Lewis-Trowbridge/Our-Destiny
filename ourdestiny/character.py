@@ -98,3 +98,18 @@ class d2character():
         }
         equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItems/", json=data, headers=self.client_object.request_header)
         return equip_request.json()
+
+    def transfer_item_to_vault(self, item_to_transfer, number_to_transfer=1):
+        if item_to_transfer.is_instanced_item and item_to_transfer.owner_object == self:
+            item_hash = item_to_transfer.item_hash
+            item_id = item_to_transfer.instance_id
+            data = {
+                "itemReferenceHash": item_hash,
+                "stackSize": number_to_transfer,
+                "transferToVault": True,
+                "itemId": item_id,
+                "characterId": self.character_id,
+                "membershipType": self.membership_type
+            }
+            transfer_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/TransferItem", json=data, headers=self.client_object.request_header)
+            return transfer_request.json()
