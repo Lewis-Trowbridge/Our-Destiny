@@ -9,6 +9,16 @@ import ourdestiny
 
 
 class d2client:
+    """
+    The main object that represents your application - automatically authenticates and downloads databases when needed.
+
+    :param api_key: The API key gotten from Bungie's website
+    :type api_key: string
+    :param client_id: The client ID gotten from Bungie's website
+    :type client_id: string
+    :param client_secret: The client secret gotten from Bungie's website
+    :type client_secret: string
+    """
     api_key = ""
     client_id = ""
     client_secret = ""

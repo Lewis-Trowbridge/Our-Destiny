@@ -17,6 +17,10 @@ To understand more about these objects, go to the :doc:`objects` page
    :maxdepth: 2
    :caption: Contents:
 
+   intro
+   objects
+   client
+
 Installation
 ------------
 
