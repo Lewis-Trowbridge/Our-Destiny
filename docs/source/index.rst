@@ -8,7 +8,7 @@ Welcome to Our Destiny's documentation!
 =======================================
 
 This project exists to allow for the use of the Destiny 2 API in Python, using objects to represent the ways in which
-data and actions are used in the game, with characters and objects being the most important,and therefore make the
+data and actions are used in the game, with characters and items being the most important, and therefore make the
 process as logical and easy-to-understand as possible.
 
 To understand more about these objects, go to the :doc:`objects` page

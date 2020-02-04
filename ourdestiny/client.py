@@ -42,6 +42,18 @@ class d2client:
         self.connect_all_destiny_db()
 
     def get_character_object(self, platform, char_num):
+
+        """
+        Used to get a character object from the authenticated user's characters
+
+        :param platform: The platform the current user is on
+        :type platform: string
+        :param char_num: The zero-based index of the character to get an object of
+        :type char_num: integer
+        :return: A character object of the desired character
+        :rtype: d2character
+        """
+
         all_json = self.get_my_characters(self.get_membership_type_enum(platform))["Response"]
         char_info_json = all_json["characters"]["data"]
         char_inv_json = all_json["characterInventories"]["data"]
@@ -133,6 +145,16 @@ class d2client:
             self.authenticate()
 
     def get_destiny_manifest(self, testing=False):
+
+        """
+        Gets the Destiny manifest, which contains links to all sqlite and json databases
+
+        :param testing: Variable used in the authentication process to check that an already stored access token is still valid, defaults to False
+        :type testing: boolean, optional
+        :return: JSON of manifest
+        :rtype: dict
+        """
+
         url = self.root_endpoint + "/Destiny2/Manifest"
         api_request = requests.get(url, headers=self.request_header)
         if not testing:
@@ -246,6 +268,20 @@ class d2client:
             return platform
 
     def get_from_db(self, hashnum, table, database="mobileWorldContent"):
+
+        """
+        Gets a JSON item from the local sqlite database, using a hash given from the API
+
+        :param hashnum: The hash number given by the API
+        :type hashnum: string, integer
+        :param table: The table in which to lookup the hash (only the unique part of the table name is needed, for example "lore" instead of "DestinyLoreDefinition"
+        :type table: string
+        :param database: The database in which to lookup the hash, defaults to world database
+        :type database: string, optional
+        :return: A JSON of the relevant data
+        :rtype: dict
+        """
+
         result_json = ""
         # Converts the hash from a JSON file to a column value for the SQL database
         hashnum = int(hashnum)
