@@ -46,8 +46,8 @@ class d2client:
         """
         Used to get a character object from the authenticated user's characters
 
-        :param platform: The platform the current user is on
-        :type platform: string
+        :param platform: The name or enum of the platform the current user is on
+        :type platform: string, integer
         :param char_num: The zero-based index of the character to get an object of
         :type char_num: integer
         :return: A character object of the desired character
@@ -274,7 +274,7 @@ class d2client:
 
         :param hashnum: The hash number given by the API
         :type hashnum: string, integer
-        :param table: The table in which to lookup the hash (only the unique part of the table name is needed, for example "lore" instead of "DestinyLoreDefinition"
+        :param table: The table in which to lookup the hash (only the unique part of the table name is needed, for example "lore" instead of "DestinyLoreDefinition")
         :type table: string
         :param database: The database in which to lookup the hash, defaults to world database
         :type database: string, optional
@@ -308,6 +308,14 @@ class d2client:
         return result_json
 
     def get_my_bungie_net_user(self):
+
+        """
+        Gets the bungienet data of the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_User-GetBungieNetUserById.html
+
+        :return: A JSON of the current user's bungienet data - see https://bungie-net.github.io/multi/schema_User-GeneralUser.html
+        :rtype: dict
+        """
+
         search_request = requests.get(self.root_endpoint + "/User/GetBungieNetUserById/" + self.bungie_membership_id,
                                       headers=self.request_header)
         return search_request.json()
@@ -322,6 +330,18 @@ class d2client:
                 self.destiny_membership_id = membership["membershipId"]
 
     def search_destiny_player(self, displayname, platform):
+
+        """
+        Searches and returns the Destiny 2 data of a given display name - see https://bungie-net.github.io/multi/operation_get_Destiny2-SearchDestinyPlayer.html
+
+        :param displayname: The full gamertag or PSN id of the player. Spaces and case are ignored.
+        :type displayname: string
+        :param platform: The name or enum of the platform the current user is on
+        :type platform: string, integer
+        :return: A JSON of Destiny user info - see https://bungie-net.github.io/multi/schema_User-UserInfoCard.html
+        :rtype: dict
+        """
+
         platform = self.get_membership_type_enum(platform)
         search_request = requests.get(
             self.root_endpoint + "/Destiny2/SearchDestinyPlayer/" + platform + "/" + displayname,
@@ -329,6 +349,18 @@ class d2client:
         return search_request.json()
 
     def get_my_profile(self, platform, array_of_enums):
+
+        """
+        Gets game-related profile information of the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html
+
+        :param platform: The name or enum of the platform the current user is on
+        :type platform: string, integer
+        :param array_of_enums: An array of enums - see https://bungie-net.github.io/multi/schema_Destiny-DestinyComponentType.html
+        :type array_of_enums: array - strings or integers
+        :return: Profile data based on enums given - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyProfileResponse.html
+        :rtype: dict
+        """
+
         if self.destiny_membership_id == "":
             self.get_my_destiny_id(platform)
         platform = self.get_membership_type_enum(platform)
@@ -342,10 +374,32 @@ class d2client:
         return search_request.json()
 
     def get_my_characters(self, platform):
+
+        """
+        Gets the characters of the currently authenticated user
+
+        :param platform: The name or enum of the platform the current user is on
+        :type platform: string, integer
+        :return: Returns data for the Characters, CharacterInventories, and CharacterEquipment enums at present - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyCharacterResponse.html
+        :rtype: dict
+        """
+
         search_json = self.get_my_profile(platform, ["Characters", "CharacterInventories", "CharacterEquipment"])
         return search_json
 
     def get_instanced_item(self, platform, instance_id):
+
+        """
+        Gets an instanced item data
+
+        :param platform: The name or enum of the platform the current user is on
+        :type platform: string, integer
+        :param instance_id: The id of the item to get instanced data of
+        :type instance_id: string
+        :return: Instanced data about the item - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyItemResponse.html
+        :rtype: dict
+        """
+
         platform = self.get_membership_type_enum(platform)
         params = {
             "components": "ItemInstances,ItemStats,ItemPerks"
