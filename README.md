@@ -35,3 +35,6 @@ guardian = myClient.get_character_object("PLATFORM", 0)
 supremacy = guardian.get_instanced_item_by_name("The Supremacy")
 guardian.equip_item(supremacy)
 ```
+
+## Documentation
+See the documentation here (still incomplete at the moment): <https://our-destiny.readthedocs.io/>
