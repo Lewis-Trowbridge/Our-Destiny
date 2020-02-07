@@ -19,20 +19,34 @@ class d2client:
     :param client_secret: The client secret gotten from Bungie's website
     :type client_secret: string
     """
+    #: Should be assigned during initialisation
     api_key = ""
+    #: Should be assigned during initialisation
     client_id = ""
+    #: Should be assigned during initialisation
     client_secret = ""
+    #: Auth code - if a new token is needed, this will be filled in order to fulfill the OAuth2 process
     auth_code = ""
+    #: The access token needed to authenticate with the API
     access_token = ""
+    #: The refresh token needed in case the access token expires
     refresh_token = ""
+    #: The root endpoint needed to communicate with the Destiny 2 API
     root_endpoint = "https://www.bungie.net/Platform"
+    #: Once authenticated, will be usable in HTTP requests in order to successfully authenticate with the Destiny 2 API
     request_header = {}
+    #: Contains the currently authenticated user's Bungie membership ID, also sometimes called bungienet ID
     bungie_membership_id = ""
+    #: Contains the currently authenticated user's Destiny membership ID, needed for most operations to do with the game
     destiny_membership_id = ""
-    asset_database = ""
-    gear_database = ""
-    world_database = ""
-    clan_banner_database = ""
+    #: Once connected, will contain the cursor object to connect with the asset database
+    asset_database = None
+    #: Once connected, will contain the cursor object to connect with the gear database
+    gear_database = None
+    #: Once connected, will contain the cursor object to connect with the world database
+    world_database = None
+    #: Once connected, will contain the cursor object to connect with the clan banner database
+    clan_banner_database = None
 
     def __init__(self, api_key_in, client_id_in, client_secret_in):
         self.api_key = api_key_in
@@ -122,6 +136,11 @@ class d2client:
         self.get_access_token()
 
     def test_access_token(self):
+
+        """
+        Called during the initialisation process, tests if the currently stored access token exists and if it is valid.
+        """
+
         try:
             # Tests to see if a token has already been saved
             with open("token.json") as jsonfile:
@@ -163,6 +182,11 @@ class d2client:
             return api_request.status_code
 
     def check_for_destiny_db_update(self):
+
+        """
+        Checks through all downloaded databases and checks if there are any updates to any of them - there should be no need to call this, as it should be called automatically during the initialisation process
+        """
+
         manifest_json = self.get_destiny_manifest()["Response"]
         with open("./db/dbinfo.json", "r") as dbinfo_file:
             dbinfo = json.loads(dbinfo_file.read())
@@ -184,6 +208,16 @@ class d2client:
             self.download_one_destiny_db("mobileClanBannerDatabase", manifest_json["mobileClanBannerDatabasePath"])
 
     def unzip_db_zip(self, zipfile_path, dbtype):
+
+        """
+        Unzips a zip file downloaded from bungie.net containing a database file, and adds or updates the corresponding entry in the dbinfo.json file
+
+        :param zipfile_path: The path to the zip file containing the database file
+        :type zipfile_path: string
+        :param dbtype: The type of database - this can be mobileAssetContent, mobileGearAssetDataBase, mobileWorldContent, or mobileClanBannerDatabase
+        :type dbtype: string
+        """
+
         with zipfile.ZipFile(zipfile_path) as DBZip:
             DBZip.extractall("./db")
             # Opens the file to read its contents and add to the JSON
@@ -199,11 +233,26 @@ class d2client:
         os.remove(zipfile_path)
 
     def download_one_destiny_db(self, dbtype, url):
+
+        """
+        Downloads a single database file, unzips it and adds or updates the relevant dbinfo.json entry
+
+        :param dbtype: The type of database - this can be mobileAssetContent, mobileGearAssetDataBase, mobileWorldContent, or mobileClanBannerDatabase
+        :type dbtype: string
+        :param url: The URL of the database file to download
+        :type url: string
+        """
+
         with open("./db/" + dbtype + ".zip", "wb") as db_file:
             db_file.write(requests.get("https://bungie.net" + url).content)
         self.unzip_db_zip("./db/" + dbtype + ".zip", dbtype)
 
     def download_all_destiny_db(self):
+
+        """
+        Downloads all database files, unzips and adds them to the relevant dbinfo.json - normally used automatically in the case of a blank slate
+        """
+
         manifest_json = self.get_destiny_manifest()
         mobile_asset_url = "https://bungie.net" + manifest_json["Response"]["mobileAssetContentPath"]
         with open("./db/dbinfo.json", "w") as dbinfo_json:
@@ -231,6 +280,11 @@ class d2client:
         self.unzip_db_zip("./db/MobileClanBannerDatabase.zip", "mobileClanBannerDatabase")
 
     def connect_all_destiny_db(self):
+
+        """
+        Checks if the path to the database files exists, and places the cursor objects for those sqlite databases into the specified class variables
+        """
+
         if os.path.exists("./db"):
             self.check_for_destiny_db_update()
         else:
@@ -250,6 +304,16 @@ class d2client:
         self.clan_banner_database = dbconnect.cursor()
 
     def get_membership_type_enum(self, platform):
+
+        """
+        Takes a more generic string of a plaform name and returns the relevant membership type enumerator
+
+        :param platform: The name or enum of the platform the current user is on
+        :type platform: string, integer
+        :return: The enumerator form of whatever platform name was passed in
+        :rtype: string
+        """
+
         platform = str(platform)
         if not str.isnumeric(platform):
             if platform == "Xbox" or platform == "XBL":
