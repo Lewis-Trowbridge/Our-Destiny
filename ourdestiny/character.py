@@ -45,6 +45,7 @@ class d2character():
     :ivar inventory: A list of d2item objects in the character's inventory
     :vartype inventory: list
     :ivar equipped: A list of d2item objects currently equipped to the character
+    :vartype equipped: list
     """
 
     def __init__(self, client_object_in, character_info_json, character_inventory_json, character_equipped_json):
