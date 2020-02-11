@@ -4,6 +4,49 @@ import ourdestiny
 
 class d2character():
 
+    """
+    The object that represents an in-game character, containing attributes and methods related to character information
+    and management. Should be produced by the client's get_character_object method.
+
+    :param client_object_in: The client object that created the character object. Allows the character object to authenticate and lookup items in database files without needing to rewrite methods or produce multiple client objects
+    :type client_object_in: d2client
+    :param character_info_json: The JSON containing the basic character data obtained from GetProfile
+    :type character_info_json: dict
+    :param character_inventory_json: The JSON containing the data for all of the items in the character's inventory obtained from GetProfile
+    :type character_inventory_json: dict
+    :param character_equipped_json: The JSON containing the data for all of the items equipped to the character obtained from GetProfile
+    :type character_equipped_json: dict
+    :ivar client_object: The d2client object that created this character object
+    :vartype client_object: d2client
+    :ivar character_id: The character ID for this character
+    :vartype character_id: string
+    :ivar membership_type: The membership type (platform) enum for the platform this character is on
+    :vartype membership_type: integer
+    :ivar light: The light (or power as it was formerly known, or light before that, thanks Bungie) level of this character
+    :vartype light: integer
+    :ivar mobility: The mobility of this character
+    :vartype mobility: integer
+    :ivar resilience: The resilience of this character
+    :vartype resilience: integer
+    :ivar recovery: The recovery of this character
+    :vartype recovery: integer
+    :ivar discipline: The discipline of this character
+    :vartype discipline: integer
+    :ivar intellect: The intellect of this character
+    :vartype intellect: integer
+    :ivar strength: The strength of this character
+    :vartype strength: integer
+    :ivar race: The race of this character (Human, Awoken, or Exo)
+    :vartype race: string
+    :ivar gender: The gender of this character
+    :vartype gender: string
+    :ivar cclass: The class of this character - note the extra c, since "class" is a reserved keyword
+    :vartype cclass: string
+    :ivar inventory: A list of d2item objects in the character's inventory
+    :vartype inventory: list
+    :ivar equipped: A list of d2item objects currently equipped to the character
+    """
+
     def __init__(self, client_object_in, character_info_json, character_inventory_json, character_equipped_json):
         self.client_object = client_object_in
         self.character_id = character_info_json["characterId"]
@@ -28,16 +71,46 @@ class d2character():
         self.equipped = equipped_objects
 
     def get_equipped_item_by_name(self, item_name):
+
+        """
+        Gets an item currently equipped to this character
+
+        :param item_name: The exact, case-sensitive name of the item you're looking for
+        :type item_name: string
+        :return: The requested item object
+        :rtype: d2item
+        """
+
         for item in self.equipped:
             if item.name == item_name:
                 return item
 
     def get_inventory_item_by_name(self, item_name):
+
+        """
+        Gets an item in the character's inventory
+
+        :param item_name: The exact, case-sensitive name of the item you're looking for
+        :type item_name: string
+        :return: The requested item object
+        :rtype: d2item
+        """
+
         for item in self.inventory:
             if item.name == item_name:
                 return item
 
     def get_item_by_name(self, item_name):
+
+        """
+        Gets an item from the character's inventory **and** equipped items
+
+        :param item_name: The exact, case-sensitive name of the item you're looking for
+        :type item_name: string
+        :return: The requested item object
+        :rtype: d2item
+        """
+
         item = self.get_equipped_item_by_name(item_name)
         if item is not None:
             return item
@@ -46,16 +119,46 @@ class d2character():
             return item
 
     def get_instanced_equipped_item_by_name(self, item_name):
+
+        """
+        Gets an instanced item from the character's equipped item
+
+        :param item_name: The exact, case-sensitive name of the item you're looking for
+        :type item_name: string
+        :return: The requested item object
+        :rtype: d2item
+        """
+
         item = self.get_equipped_item_by_name(item_name)
         item.become_instanced()
         return item
 
     def get_instanced_inventory_item_by_name(self, item_name):
+
+        """
+        Gets an instanced item from the character's inventory
+
+        :param item_name: The exact, case-sensitive name of the item you're looking for
+        :type item_name: string
+        :return: The requested item object
+        :rtype: d2item
+        """
+
         item = self.get_inventory_item_by_name(item_name)
         item.become_instanced()
         return item
 
     def get_instanced_item_by_name(self, item_name):
+
+        """
+        Gets an instanced item from the character's inventory or equipped items
+
+        :param item_name: The exact, case-sensitive name of the item you're looking for
+        :type item_name: string
+        :return: The requested item object
+        :rtype: d2item
+        """
+
         item = self.get_equipped_item_by_name(item_name)
         if item is not None:
             item.become_instanced()
@@ -67,12 +170,42 @@ class d2character():
                 return item
 
     def get_equipped_item_by_index(self, item_index):
-        return self.inventory[item_index]
+
+        """
+        Gets an item from the character's equipped items by index
+
+        :param item_index: The 0-based index of the item in the list of the character's equipped items
+        :type item_index: integer
+        :return: The item object at the index given
+        :rtype: d2item
+        """
+
+        return self.equipped[item_index]
 
     def get_inventory_item_by_index(self, item_index):
+
+        """
+        Gets an item from the character's inventory items by index
+
+        :param item_index: The 0-based index of the item in the list of the character's inventory items
+        :type item_index: integer
+        :return: The item object at the index given
+        :rtype: d2item
+        """
+
         return self.inventory[item_index]
 
     def equip_item(self, item_to_equip):
+
+        """
+        Takes an *instanced* d2item object, and equips it if it is instanced, is equippable, and belongs to the current character
+
+        :param item_to_equip: The object of the item to be equipped to the current character
+        :type item_to_equip: d2item
+        :return: The response JSON from the API - see https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItem.html
+        :rtype: dict
+        """
+
         if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
             data = {
                     "itemId": item_to_equip.instance_id,
@@ -85,6 +218,15 @@ class d2character():
             raise Exception("Item cannot be equipped")
 
     def equip_items(self, array_of_items_to_equip):
+
+        """
+        Takes an array of *instanced* items, and equips them if they are instanced, equippable and belong to the current character
+
+        :param array_of_items_to_equip: An array of item objects to be equipped to the current character
+        :type array_of_items_to_equip: array of d2items
+        :return: The response JSON from the API - see https://bungie-net.github.io/multi/schema_Destiny-DestinyEquipItemResults.html
+        """
+
         item_ids = []
         for item_to_equip in array_of_items_to_equip:
             if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
@@ -99,8 +241,20 @@ class d2character():
         equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItems/", json=data, headers=self.client_object.request_header)
         return equip_request.json()
 
-    def transfer_item_to_vault(self, item_to_transfer, number_to_transfer=1):
-        if item_to_transfer.is_instanced_item and item_to_transfer.owner_object == self:
+    def transfer_item(self, item_to_transfer, number_to_transfer=1):
+
+        """
+        Transfers an *instanced* item to or from the vault
+
+        :param item_to_transfer: The item object to be transferred to the vault
+        :type item_to_transfer: d2item
+        :param number_to_transfer: The number of items to transfer to the vault - defaults to 1, but can be increased in the case of stacks of items, such as planetary materials
+        :type number_to_transfer: integer
+        :return: The response JSON from the API - see https://bungie-net.github.io/multi/schema_Destiny-DestinyEquipItemResults.html
+        :rtype: dict
+        """
+
+        if item_to_transfer is not None and item_to_transfer.is_instanced_item and item_to_transfer.owner_object == self:
             item_hash = item_to_transfer.item_hash
             item_id = item_to_transfer.instance_id
             data = {
