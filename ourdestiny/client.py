@@ -18,34 +18,48 @@ class d2client:
     :type client_id: string
     :param client_secret: The client secret gotten from Bungie's website
     :type client_secret: string
+    :cvar api_key: The same API key gotten from Bungie's website, should be the same as during initialisation
+    :vartype api_key: string
+    :cvar client_id: The same client ID gotten from Bungie's website, should be the same as during initialisation
+    :vartype client_id: string
+    :cvar client_secret: The same client secret gotten from Bungie's website, should be the same as during initialisation
+    :vartype client_secret: string
+    :cvar auth_code: The auth code needed to get the access token - if this is already stored, this attribute will be an empty string, as there is no need to go through the full OAuth2 process
+    :vartype auth_code: string
+    :cvar access_token: The access token needed to authenticate with the API
+    :vartype access_token: string
+    :cvar refresh_token: The refresh token needed in case the access token expires
+    :vartype refresh_token: string
+    :cvar root_endpoint: The root endpoint needed to communicate with the API
+    :vartype root_endpoint: string
+    :cvar request_header: Once authenticated, will allow for any request to be correctly authenticated with the API
+    :vartype request_header: dict
+    :cvar bungie_membership_id: When retrieved, contains the currently authenticated user's Bungie membership ID, also sometimes called bungienet ID
+    :vartype bungie_membership_id: string
+    :cvar destiny_membership_id: When obtained, contains the currently authenticated user's Destiny membership ID, needed for most operations to do with the game
+    :vartype destiny_membership_id:
+    :cvar asset_database: Contains a sqlite3 Cursor object linked to the asset database file - see https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Cursor
+    :vartype asset_database: sqlite3.cursor
+    :cvar gear_database: Contains a sqlite3 Cursor object linked to the gear database file - see https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Cursor
+    :vartype gear_database: sqlite3.cursor
+    :cvar world_database: Contains a sqlite3 Cursor object linked to the world database file (the one you'll be using most of the time) - see https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Cursor
+    :vartype world_database: sqlite3.cursor
+    :cvar clan_banner_database: Contains a sqlite3 Cursor object linked to the clan banner database file - see https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Cursor
+    :vartype clan_banner_database: sqlite3.cursor
     """
-    #: Should be assigned during initialisation
     api_key = ""
-    #: Should be assigned during initialisation
     client_id = ""
-    #: Should be assigned during initialisation
     client_secret = ""
-    #: Auth code - if a new token is needed, this will be filled in order to fulfill the OAuth2 process
     auth_code = ""
-    #: The access token needed to authenticate with the API
     access_token = ""
-    #: The refresh token needed in case the access token expires
     refresh_token = ""
-    #: The root endpoint needed to communicate with the Destiny 2 API
     root_endpoint = "https://www.bungie.net/Platform"
-    #: Once authenticated, will be usable in HTTP requests in order to successfully authenticate with the Destiny 2 API
     request_header = {}
-    #: Contains the currently authenticated user's Bungie membership ID, also sometimes called bungienet ID
     bungie_membership_id = ""
-    #: Contains the currently authenticated user's Destiny membership ID, needed for most operations to do with the game
     destiny_membership_id = ""
-    #: Once connected, will contain the cursor object to connect with the asset database
     asset_database = None
-    #: Once connected, will contain the cursor object to connect with the gear database
     gear_database = None
-    #: Once connected, will contain the cursor object to connect with the world database
     world_database = None
-    #: Once connected, will contain the cursor object to connect with the clan banner database
     clan_banner_database = None
 
     def __init__(self, api_key_in, client_id_in, client_secret_in):
