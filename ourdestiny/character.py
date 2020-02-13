@@ -79,7 +79,7 @@ class d2character():
         :param item_name: The exact, case-sensitive name of the item you're looking for
         :type item_name: string
         :return: The requested item object
-        :rtype: d2item
+        :rtype: ourdestiny.d2item
         """
 
         for item in self.equipped:
@@ -109,7 +109,7 @@ class d2character():
         :param item_name: The exact, case-sensitive name of the item you're looking for
         :type item_name: string
         :return: The requested item object
-        :rtype: d2item
+        :rtype: ourdestiny.d2item
         """
 
         item = self.get_equipped_item_by_name(item_name)
@@ -127,7 +127,7 @@ class d2character():
         :param item_name: The exact, case-sensitive name of the item you're looking for
         :type item_name: string
         :return: The requested item object
-        :rtype: d2item
+        :rtype: ourdestiny.d2item
         """
 
         item = self.get_equipped_item_by_name(item_name)
@@ -142,7 +142,7 @@ class d2character():
         :param item_name: The exact, case-sensitive name of the item you're looking for
         :type item_name: string
         :return: The requested item object
-        :rtype: d2item
+        :rtype: ourdestiny.d2item
         """
 
         item = self.get_inventory_item_by_name(item_name)
@@ -157,7 +157,7 @@ class d2character():
         :param item_name: The exact, case-sensitive name of the item you're looking for
         :type item_name: string
         :return: The requested item object
-        :rtype: d2item
+        :rtype: ourdestiny.d2item
         """
 
         item = self.get_equipped_item_by_name(item_name)
@@ -178,7 +178,7 @@ class d2character():
         :param item_index: The 0-based index of the item in the list of the character's equipped items
         :type item_index: integer
         :return: The item object at the index given
-        :rtype: d2item
+        :rtype: ourdestiny.d2item
         """
 
         return self.equipped[item_index]
@@ -191,7 +191,7 @@ class d2character():
         :param item_index: The 0-based index of the item in the list of the character's inventory items
         :type item_index: integer
         :return: The item object at the index given
-        :rtype: d2item
+        :rtype: ourdestiny.d2item
         """
 
         return self.inventory[item_index]
@@ -223,9 +223,10 @@ class d2character():
         """
         Takes an array of *instanced* items, and equips them if they are instanced, equippable and belong to the current character
 
-        :param array_of_items_to_equip: An array of item objects to be equipped to the current character
-        :type array_of_items_to_equip: array of d2items
+        :param array_of_items_to_equip: A list of item objects to be equipped to the current character
+        :type array_of_items_to_equip: list of d2items
         :return: The response JSON from the API - see https://bungie-net.github.io/multi/schema_Destiny-DestinyEquipItemResults.html
+        :rtype: dict
         """
 
         item_ids = []

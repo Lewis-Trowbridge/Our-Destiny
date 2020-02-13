@@ -12,11 +12,11 @@ class d2client:
     """
     The main object that represents your application - automatically authenticates and downloads databases when needed.
 
-    :param api_key: The API key gotten from Bungie's website
+    :param api_key_in: The API key gotten from Bungie's website
     :type api_key: string
-    :param client_id: The client ID gotten from Bungie's website
+    :param client_id_in: The client ID gotten from Bungie's website
     :type client_id: string
-    :param client_secret: The client secret gotten from Bungie's website
+    :param client_secret_in: The client secret gotten from Bungie's website
     :type client_secret: string
     :cvar api_key: The same API key gotten from Bungie's website, should be the same as during initialisation
     :vartype api_key: string
@@ -79,7 +79,7 @@ class d2client:
         :param char_num: The zero-based index of the character to get an object of
         :type char_num: integer
         :return: A character object of the desired character
-        :rtype: d2character
+        :rtype: ourdestiny.d2character
         """
 
         all_json = self.get_my_characters(self.get_membership_type_enum(platform))["Response"]
