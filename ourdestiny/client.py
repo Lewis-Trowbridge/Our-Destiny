@@ -86,14 +86,16 @@ class d2client:
         char_info_json = all_json["characters"]["data"]
         char_inv_json = all_json["characterInventories"]["data"]
         char_equip_json = all_json["characterEquipment"]["data"]
+        char_prog_json = all_json["characterProgressions"]["data"]
         count = 0
         for char_id in char_info_json.keys():
             if count == char_num:
                 char_info_json = char_info_json[char_id]
                 char_inv_json = char_inv_json[char_id]["items"]
                 char_equip_json = char_equip_json[char_id]["items"]
+                char_prog_json = char_prog_json[char_id]
             count += 1
-        return ourdestiny.d2character(self, char_info_json, char_inv_json, char_equip_json)
+        return ourdestiny.d2character(self, char_info_json, char_inv_json, char_equip_json, char_prog_json)
 
     def get_auth_code_url(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"
@@ -458,11 +460,11 @@ class d2client:
 
         :param platform: The name or enum of the platform the current user is on
         :type platform: string, integer
-        :return: Returns data for the Characters, CharacterInventories, and CharacterEquipment enums at present - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyCharacterResponse.html
+        :return: Returns data for the Characters, CharacterInventories, CharacterEquipment and CharacterProgression enums at present - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyCharacterResponse.html
         :rtype: dict
         """
 
-        search_json = self.get_my_profile(platform, ["Characters", "CharacterInventories", "CharacterEquipment"])
+        search_json = self.get_my_profile(platform, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])
         return search_json
 
     def get_instanced_item(self, platform, instance_id):
