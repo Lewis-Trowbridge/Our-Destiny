@@ -22,6 +22,8 @@ To understand more about these objects, go to the :doc:`objects` page
    client
    character
    item
+   faction
+   progression
 
 Installation
 ------------

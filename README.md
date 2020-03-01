@@ -37,4 +37,4 @@ guardian.equip_item(supremacy)
 ```
 
 ## Documentation
-See the documentation here (still incomplete at the moment): <https://our-destiny.readthedocs.io/>
+See the documentation here (as complete as the code itself, which is to say *not*, but as close as it's going to get): <https://our-destiny.readthedocs.io/>

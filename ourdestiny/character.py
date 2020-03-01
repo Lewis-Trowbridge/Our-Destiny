@@ -9,7 +9,7 @@ class d2character():
     and management. Should be produced by the client's get_character_object method.
 
     :param client_object_in: The client object that created the character object. Allows the character object to authenticate and lookup items in database files without needing to rewrite methods or produce multiple client objects
-    :type client_object_in: d2client
+    :type client_object_in: ourdestiny.d2client
     :param character_info_json: The JSON containing the basic character data obtained from GetProfile
     :type character_info_json: dict
     :param character_inventory_json: The JSON containing the data for all of the items in the character's inventory obtained from GetProfile
@@ -48,8 +48,10 @@ class d2character():
     :vartype inventory: list
     :ivar equipped: A list of d2item objects currently equipped to the character
     :vartype equipped: list
-    :ivar progressions: A list of dicts containing data about progressions on this character - e.g glory ranks, infamy ranks
+    :ivar progressions: A list of d2progression objects containing data about progressions on this character - e.g glory ranks, infamy ranks
     :vartype progressions: list
+    :ivar factions: A list of d2faction objects containing data about factions
+    :vartype factions: list
     """
 
     def __init__(self, client_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json):
@@ -76,18 +78,14 @@ class d2character():
         self.equipped = equipped_objects
         progression_list = []
         for progression_hash in character_progression_json["progressions"].keys():
-            current_progression_json = character_progression_json["progressions"][progression_hash]
             progression_db_json = self.client_object.get_from_db(progression_hash, "Progression")
-            progression_new_dict = {"name": progression_db_json["displayProperties"]["name"],
-                                    "description": progression_db_json["displayProperties"]["description"],
-                                    "units": progression_db_json["displayProperties"]["displayUnitsName"],
-                                    "steps": progression_db_json["steps"],
-                                    "rewardItems": progression_db_json["rewardItems"]
-                                    }
-            for dict_title in current_progression_json.keys():
-                progression_new_dict[dict_title] = current_progression_json[dict_title]
-            progression_list.append(progression_new_dict)
+            progression_list.append(ourdestiny.d2progression(progression_db_json))
         self.progressions = progression_list
+        faction_list = []
+        for faction_hash in character_progression_json["factions"].keys():
+            faction_list.append(ourdestiny.d2faction(self.client_object.get_from_db(faction_hash, "Faction"), self))
+        self.factions = faction_list
+
 
     def get_equipped_item_by_name(self, item_name):
 
