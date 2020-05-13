@@ -319,6 +319,22 @@ class d2client:
         dbconnect = sqlite3.connect(common_path + dbinfo["mobileClanBannerDatabase"])
         self.clan_banner_database = dbconnect.cursor()
 
+    def get_world_db_cursor(self):
+        common_path = "./db/"
+        with open(common_path + "dbinfo.json", "r") as dbinfo_file:
+            dbinfo = json.loads(dbinfo_file.read())
+        dbconnect = sqlite3.connect(common_path + dbinfo["mobileWorldContent"])
+        return dbconnect.cursor()
+
+    def get_hash_with_cursor(self, hashnum, cursor, table):
+
+        hashnum = int(hashnum)
+        if (hashnum & (1 << (32 - 1))) != 0:
+            hashnum = hashnum - (1 << 32)
+        tablename = "Destiny"+table+"Definition"
+        db_text = cursor.execute("SELECT json FROM " + tablename + " WHERE id = " + str(hashnum)).fetchone()[0]
+        return json.loads(db_text)
+
     def get_membership_type_enum(self, platform):
 
         """

@@ -1,5 +1,4 @@
 
-
 class d2item():
 
     """
@@ -38,7 +37,7 @@ class d2item():
     :ivar stats: A list of dicts that contain the names and values of each of the stats for this item - generic when not instanced, updates when instanced
     :vartype stats: list
     :ivar owner_object: The object of the character that owns this object
-    :vartype owner_object: d2character
+    :vartype owner_object: ourdestiny.d2character
     :ivar item_hash: The hash value of this item for the database files
     :vartype item_hash: integer
     :ivar bucket_info: The information about what slot this item should fit in - taken directly from the API
@@ -90,6 +89,7 @@ class d2item():
         """
 
         if self.instance_id is not None:
+            dbcursor = self.owner_object.client_object.get_world_db_cursor()
             item_instance_json = self.owner_object.client_object.get_instanced_item(self.owner_object.membership_type, self.instance_id)
             self.can_equip = item_instance_json["instance"]["data"]["canEquip"]
             self.is_equipped = item_instance_json["instance"]["data"]["isEquipped"]
@@ -101,13 +101,14 @@ class d2item():
                 self.stats = []
                 stat_hashes = item_instance_json["stats"]["data"]["stats"].keys()
                 for stat_hash in stat_hashes:
-                    self.stats.append({"name": self.owner_object.client_object.get_from_db(stat_hash, "Stat")["displayProperties"]["name"], "value": item_instance_json["stats"]["data"]["stats"][stat_hash]["value"]})
+                    self.stats.append({"name": self.owner_object.client_object.get_hash_with_cursor(stat_hash, dbcursor, "Stat")["displayProperties"]["name"], "value": item_instance_json["stats"]["data"]["stats"][stat_hash]["value"]})
+
             except KeyError:
                 self.stats = []
             self.is_instanced_item = True
             try:
                 for perk in item_instance_json["perks"]["data"]["perks"]:
-                    perk_json = self.owner_object.client_object.get_from_db(perk["perkHash"], "SandboxPerk")
+                    perk_json = self.owner_object.client_object.get_hash_with_cursor(perk["perkHash"], dbcursor, "SandboxPerk")
                     perk_dict = {"name": perk_json["displayProperties"]["name"], "description": perk_json["displayProperties"]["description"], "isActive": perk["isActive"], "isVisible": perk["visible"]}
                     if perk_json["displayProperties"]["hasIcon"]:
                         perk_dict["icon"] = "https://www.bungie.net" + perk_json["displayProperties"]["icon"]

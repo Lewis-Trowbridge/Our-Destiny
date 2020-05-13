@@ -1,4 +1,5 @@
 import requests
+from concurrent.futures import ThreadPoolExecutor, wait
 import ourdestiny
 
 
@@ -19,7 +20,7 @@ class d2character():
     :param character_progression_json: The JSON containing the data for all of the character progressions
     :type character_progression_json: dict
     :ivar client_object: The d2client object that created this character object
-    :vartype client_object: d2client
+    :vartype client_object: ourdestiny.d2client
     :ivar character_id: The character ID for this character
     :vartype character_id: string
     :ivar membership_type: The membership type (platform) enum for the platform this character is on
@@ -85,7 +86,6 @@ class d2character():
         for faction_hash in character_progression_json["factions"].keys():
             faction_list.append(ourdestiny.d2faction(self.client_object.get_from_db(faction_hash, "Faction"), self))
         self.factions = faction_list
-
 
     def get_equipped_item_by_name(self, item_name):
 
@@ -186,6 +186,12 @@ class d2character():
                 item.become_instanced()
                 return item
 
+    def get_instanced_items_by_name(self, array_of_names):
+
+        with ThreadPoolExecutor() as pool:
+            for name in array_of_names:
+                pool.submit(self.get_instanced_equipped_item_by_name, name)
+
     def get_equipped_item_by_index(self, item_index):
 
         """
@@ -212,17 +218,66 @@ class d2character():
 
         return self.inventory[item_index]
 
+    def get_item_in_slot(self, slot):
+
+        """
+        Gets an equipped item in an inventory slot - uses one of two corresponding values for each slot, shown below:
+
+        | Kinetic Weapons: 0
+        | Energy Weapons: 1
+        | Power Weapons: 2
+        | Helmet: 3
+        | Gauntlets: 4
+        | Chest Armor: 5
+        | Leg Armor: 6
+        | Class Armor: 7
+        | Ghost: 8
+        | Vehicle: 9
+        | Ships: 10
+        | Subclass: 16
+        | Clan Banners: 17
+        | Emblems: 27
+        | Finishers: 47
+        | Emotes: 12
+        | Seasonal Artifact: 49
+
+        :param slot: The slot being targeted
+        :type slot: string or integer
+        :return: The equipped item in the slot
+        :rtype: ourdestiny.d2item
+        """
+
+        for item in self.equipped:
+            if item.bucket_info["displayProperties"]["name"] == slot or item.bucket_info["index"] == slot:
+                return item
+
+    def get_item_in_same_slot(self, item_to_check):
+
+        """
+        Gets the currently equipped item in the same slot as the item passed in
+
+        :param item_to_check: The item to get the equipped item in the same slot as
+        :type item_to_check: ourdestiny.d2item
+        :return: The item in the same slot as the equipped item
+        :rtype: ourdestiny.d2item
+        """
+
+        for item in self.equipped:
+            if item.bucket_info["index"] == item_to_check.bucket_info["index"]:
+                return item
+
     def equip_item(self, item_to_equip):
 
         """
         Takes an *instanced* d2item object, and equips it if it is instanced, is equippable, and belongs to the current character
 
         :param item_to_equip: The object of the item to be equipped to the current character
-        :type item_to_equip: d2item
+        :type item_to_equip: ourdestiny.d2item
         :return: The response JSON from the API - see https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItem.html
         :rtype: dict
         """
 
+        item_to_equip.become_instanced()
         if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
             data = {
                     "itemId": item_to_equip.instance_id,
@@ -230,6 +285,7 @@ class d2character():
                     "membershipType": self.membership_type
             }
             equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItem/", json=data, headers=self.client_object.request_header)
+            item_to_equip.become_instanced()
             return equip_request.json()
         else:
             raise Exception("Item cannot be equipped")
@@ -240,15 +296,17 @@ class d2character():
         Takes an array of *instanced* items, and equips them if they are instanced, equippable and belong to the current character
 
         :param array_of_items_to_equip: A list of item objects to be equipped to the current character
-        :type array_of_items_to_equip: list of d2items
+        :type array_of_items_to_equip: List[ourdestiny.d2item]
         :return: The response JSON from the API - see https://bungie-net.github.io/multi/schema_Destiny-DestinyEquipItemResults.html
         :rtype: dict
         """
 
         item_ids = []
+        items_replaced = []
         for item_to_equip in array_of_items_to_equip:
             if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
                 item_ids.append(item_to_equip.instance_id)
+                items_replaced.append(self.get_item_in_same_slot(item_to_equip))
             else:
                 raise Exception(item_to_equip.name + "cannot be equipped")
         data = {
@@ -257,7 +315,31 @@ class d2character():
             "membershipType": self.membership_type
         }
         equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItems/", json=data, headers=self.client_object.request_header)
+        count = 0
+        futures = []
+        pool = ThreadPoolExecutor()
+        for item_to_equip in array_of_items_to_equip:
+            futures.append(pool.submit(item_to_equip.become_instanced))
+            futures.append(pool.submit(items_replaced[count].become_instanced))
+            self.swap_item(items_replaced[count], array_of_items_to_equip[count])
+            count += 1
+        wait(futures)
         return equip_request.json()
+
+    def swap_item(self, item_in_equipped, item_in_inventory):
+
+        """
+        **Do not use for equipping items to an in-game character, this is used to keep consistency locally due to Bungie's API not updating its inventories instantly.**
+
+        Swaps a currently equipped item with an inventory item in the local character object
+
+        :param item_in_equipped: Item in equipped list to be swapped
+        :type item_in_equipped: ourdestiny.d2item
+        :param item_in_inventory: Item in inventory list to be swapped
+        :type item_in_inventory: ourdestiny.d2item
+        """
+        self.equipped[self.equipped.index(item_in_equipped)] = item_in_inventory
+        self.inventory[self.inventory.index(item_in_inventory)] = item_in_equipped
 
     def transfer_item(self, item_to_transfer, number_to_transfer=1):
 
