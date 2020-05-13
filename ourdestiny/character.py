@@ -150,6 +150,28 @@ class d2character():
         item.become_instanced()
         return item
 
+    def get_instanced_equipped_items_by_name(self, list_of_items_to_get):
+        """
+        Gets a list of instanced items from the character's equipped items
+
+        :param list_of_items_to_get: A list of strings of items to get
+        :type list_of_items_to_get: List[str]
+        :return: A list of requested items
+        :rtype: List[ourdestiny.d2item]
+        """
+
+        items_gotten = []
+        futures = []
+        pool = ThreadPoolExecutor()
+        for item_name in list_of_items_to_get:
+            futures.append(pool.submit(self.get_instanced_equipped_item_by_name, item_name))
+        wait(futures)
+        for future in futures:
+            items_gotten.append(future.result())
+        pool.shutdown()
+        return items_gotten
+
+
     def get_instanced_inventory_item_by_name(self, item_name):
 
         """
@@ -164,6 +186,29 @@ class d2character():
         item = self.get_inventory_item_by_name(item_name)
         item.become_instanced()
         return item
+
+    def get_instanced_inventory_items_by_name(self, list_of_items_to_get):
+
+        """
+        Gets a list of instanced items from the character's inventory
+
+        :param list_of_items_to_get: A list of strings of items to get
+        :type list_of_items_to_get: List[str]
+        :return: A list of items that could be found.
+        :rtype: List[ourdestiny.d2item]
+        """
+
+        items_gotten = []
+        futures = []
+        pool = ThreadPoolExecutor()
+        for item_name in list_of_items_to_get:
+            futures.append(pool.submit(self.get_instanced_inventory_item_by_name, item_name))
+        wait(futures)
+        for future in futures:
+            items_gotten.append(future.result())
+        pool.shutdown()
+        return items_gotten
+
 
     def get_instanced_item_by_name(self, item_name):
 
@@ -324,6 +369,7 @@ class d2character():
             self.swap_item(items_replaced[count], array_of_items_to_equip[count])
             count += 1
         wait(futures)
+        pool.shutdown()
         return equip_request.json()
 
     def swap_item(self, item_in_equipped, item_in_inventory):
