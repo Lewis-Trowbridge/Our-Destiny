@@ -444,7 +444,28 @@ class d2client:
             headers=self.request_header)
         return search_request.json()
 
-    def get_my_profile(self, platform, array_of_enums):
+    def get_my_profile(self, platform):
+        """
+        Gets a profile object for the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html
+
+        :param platform: The name or enum of the platform the current user is on
+        :type platform: string, integer
+        :return: A d2profile object for the currently authenticated user
+        :rtype: ourdestiny.d2profile
+        """
+
+        if self.destiny_membership_id == "":
+            self.get_my_destiny_id(platform)
+        platform = self.get_membership_type_enum(platform)
+        params = {"components": "Profiles"}
+        profile_request = requests.get(
+            self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id,
+            headers=self.request_header,
+            params=params
+        )
+        return ourdestiny.d2profile(profile_request.json()["Response"])
+
+    def get_component_json(self, platform, array_of_enums):
 
         """
         Gets game-related profile information of the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html
@@ -480,7 +501,7 @@ class d2client:
         :rtype: dict
         """
 
-        search_json = self.get_my_profile(platform, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])
+        search_json = self.get_component_json(platform, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])
         return search_json
 
     def get_instanced_item(self, platform, instance_id):
