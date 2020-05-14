@@ -20,6 +20,7 @@ To understand more about these objects, go to the :doc:`objects` page
    intro
    objects
    client
+   profile
    character
    item
    faction

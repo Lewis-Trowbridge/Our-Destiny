@@ -7,7 +7,7 @@ class d2character():
 
     """
     The object that represents an in-game character, containing attributes and methods related to character information
-    and management. Should be produced by the client's get_character_object method.
+    and management. Should be produced by the profile's get_character_object method.
 
     :param client_object_in: The client object that created the character object. Allows the character object to authenticate and lookup items in database files without needing to rewrite methods or produce multiple client objects
     :type client_object_in: ourdestiny.d2client

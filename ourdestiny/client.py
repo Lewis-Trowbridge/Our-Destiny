@@ -55,7 +55,7 @@ class d2client:
     refresh_token = ""
     root_endpoint = "https://www.bungie.net/Platform"
     request_header = {}
-    bungie_membership_id = ""
+    #bungie_membership_id = ""
     destiny_membership_id = ""
     asset_database = None
     gear_database = None
@@ -68,34 +68,6 @@ class d2client:
         self.client_secret = client_secret_in
         self.test_access_token()
         self.connect_all_destiny_db()
-
-    def get_character_object(self, platform, char_num):
-
-        """
-        Used to get a character object from the authenticated user's characters
-
-        :param platform: The name or enum of the platform the current user is on
-        :type platform: string, integer
-        :param char_num: The zero-based index of the character to get an object of
-        :type char_num: integer
-        :return: A character object of the desired character
-        :rtype: ourdestiny.d2character
-        """
-
-        all_json = self.get_my_characters(self.get_membership_type_enum(platform))["Response"]
-        char_info_json = all_json["characters"]["data"]
-        char_inv_json = all_json["characterInventories"]["data"]
-        char_equip_json = all_json["characterEquipment"]["data"]
-        char_prog_json = all_json["characterProgressions"]["data"]
-        count = 0
-        for char_id in char_info_json.keys():
-            if count == char_num:
-                char_info_json = char_info_json[char_id]
-                char_inv_json = char_inv_json[char_id]["items"]
-                char_equip_json = char_equip_json[char_id]["items"]
-                char_prog_json = char_prog_json[char_id]
-            count += 1
-        return ourdestiny.d2character(self, char_info_json, char_inv_json, char_equip_json, char_prog_json)
 
     def get_auth_code_url(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"
@@ -463,7 +435,7 @@ class d2client:
             headers=self.request_header,
             params=params
         )
-        return ourdestiny.d2profile(profile_request.json()["Response"])
+        return ourdestiny.d2profile(profile_request.json()["Response"], self)
 
     def get_component_json(self, platform, array_of_enums):
 
@@ -489,20 +461,6 @@ class d2client:
             self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + self.destiny_membership_id,
             headers=self.request_header, params=params)
         return search_request.json()
-
-    def get_my_characters(self, platform):
-
-        """
-        Gets the characters of the currently authenticated user
-
-        :param platform: The name or enum of the platform the current user is on
-        :type platform: string, integer
-        :return: Returns data for the Characters, CharacterInventories, CharacterEquipment and CharacterProgression enums at present - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyCharacterResponse.html
-        :rtype: dict
-        """
-
-        search_json = self.get_component_json(platform, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])
-        return search_json
 
     def get_instanced_item(self, platform, instance_id):
 
