@@ -21,14 +21,16 @@ class d2profile():
     :vartype membership_id: string
     :ivar characters: A list of characters attached to this profile
     :vartype characters: List[ourdestiny.d2character]
+    :ivar current_season: A season object of the current season in the game
+    :vartype current_season: ourdestiny.d2season
     """
-    def __init__(self, profile_json, client_object):
+    def __init__(self, client_object, profile_json):
         self.client_object = client_object
         self.display_name = profile_json["profile"]["data"]["userInfo"]["displayName"]
         self.membership_type = profile_json["profile"]["data"]["userInfo"]["membershipType"]
         self.membership_id = profile_json["profile"]["data"]["userInfo"]["membershipId"]
-        #world_cursor = self.client_object.get_world_db_cursor()
-        #self.current_season = self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season")
+        world_cursor = self.client_object.get_world_db_cursor()
+        self.current_season = ourdestiny.d2season(self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season"), client_object)
         characters_json = self.client_object.get_component_json(self.membership_type, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
         self.characters = self.get_character_objects(characters_json)
 

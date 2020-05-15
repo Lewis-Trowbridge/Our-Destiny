@@ -25,6 +25,7 @@ To understand more about these objects, go to the :doc:`objects` page
    item
    faction
    progression
+   season
 
 Installation
 ------------
@@ -40,7 +41,8 @@ Getting started
 
    import ourdestiny
    myClient = ourdestiny.d2client("API_KEY", "CLIENT_ID", "CLIENT_SECRET")
-   guardian = myClient.get_character_object("PLATFORM", 0)
+   myProfile = myClient.get_my_profile("PLATFORM")
+   guardian = myProfile.characters[0]
    supremacy = guardian.get_instanced_item_by_name("The Supremacy")
    guardian.equip_item(supremacy)
 

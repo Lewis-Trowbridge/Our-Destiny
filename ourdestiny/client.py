@@ -435,7 +435,7 @@ class d2client:
             headers=self.request_header,
             params=params
         )
-        return ourdestiny.d2profile(profile_request.json()["Response"], self)
+        return ourdestiny.d2profile(self, profile_request.json()["Response"])
 
     def get_component_json(self, platform, array_of_enums):
 
