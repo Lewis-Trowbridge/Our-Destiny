@@ -31,18 +31,25 @@ class d2profile():
         self.membership_id = profile_json["profile"]["data"]["userInfo"]["membershipId"]
         world_cursor = self.client_object.get_world_db_cursor()
         self.current_season = ourdestiny.d2season(self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season"), client_object)
-        characters_json = self.client_object.get_component_json(self.membership_type, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
+        characters_json = self.client_object.get_component_json(self.membership_type,self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
         self.characters = self.get_character_objects(characters_json)
 
     def get_character_objects(self, characters_json):
 
         char_info_json = characters_json["characters"]["data"]
-        char_inv_json = characters_json["characterInventories"]["data"]
+        try:
+            char_inv_json = characters_json["characterInventories"]["data"]
+        # If we haven't got any inventory items (likely in the case where we're looking at someone else's character), make an empty dummy dictionary
+        except KeyError:
+            char_inv_json = {}
+            for char_id in char_info_json.keys():
+                char_inv_json[char_id] = {"items": []}
         char_equip_json = characters_json["characterEquipment"]["data"]
         char_prog_json = characters_json["characterProgressions"]["data"]
         char_list = []
         for char_id in char_info_json.keys():
             char_list.append(ourdestiny.d2character(self.client_object, char_info_json[char_id],
-                                                    char_inv_json[char_id]["items"], char_equip_json[char_id]["items"],
+                                                    char_inv_json[char_id]["items"],
+                                                    char_equip_json[char_id]["items"],
                                                     char_prog_json[char_id]))
         return char_list

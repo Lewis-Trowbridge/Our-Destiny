@@ -5,6 +5,7 @@ import sqlite3
 import urllib.parse as urlparse
 import zipfile
 import requests
+from concurrent.futures import ThreadPoolExecutor, wait
 import ourdestiny
 
 
@@ -378,15 +379,16 @@ class d2client:
     def get_my_bungie_net_user(self):
 
         """
-        Gets the bungienet data of the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_User-GetBungieNetUserById.html
+        Gets the bungienet object of the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_User-GetBungieNetUserById.html
 
-        :return: A JSON of the current user's bungienet data - see https://bungie-net.github.io/multi/schema_User-GeneralUser.html
-        :rtype: dict
+        :return: A bungienetuser object of the current user's bungienet data - see https://bungie-net.github.io/multi/schema_User-GeneralUser.html
+        :rtype: ourdestiny.bungienetuser
         """
 
-        search_request = requests.get(self.root_endpoint + "/User/GetBungieNetUserById/" + self.bungie_membership_id,
+        search_request = requests.get(self.root_endpoint + "/User/GetMembershipsForCurrentUser/",
                                       headers=self.request_header)
-        return search_request.json()
+
+        return ourdestiny.bungienetuser(search_request.json()["Response"]["bungieNetUser"])
 
     def get_my_destiny_id(self, platform):
         platform = self.get_membership_type_enum(platform)
@@ -437,7 +439,62 @@ class d2client:
         )
         return ourdestiny.d2profile(self, profile_request.json()["Response"])
 
-    def get_component_json(self, platform, array_of_enums):
+    def get_bungienetuser_with_membership_id(self, membership_id, platform):
+
+        """
+        A method to get a user's bungienetuser object using their membership ID and the platform they are on.
+
+        :param membership_id: The membership ID for the desired user
+        :type membership_id: string
+        :param platform: The platform the desired user is on
+        :type platform: string
+        :return: The bungienetuser object for the desired user
+        :rtype: ourdestiny.bungienetuser
+        """
+
+        platform = self.get_membership_type_enum(platform)
+        profile_request = requests.get(self.root_endpoint+"/User/GetMembershipsById/"+membership_id+"/"+platform, headers=self.request_header)
+        return ourdestiny.bungienetuser(profile_request.json()["Response"]["bungieNetUser"])
+
+    def get_bunginetusers_with_search_name(self, search_string):
+        """
+        Gets a list of bungienetusers based on a search string inputted
+
+        :param search_string: String to search for in usernames
+        :type search_string: string
+        :return: A list of bunginetuser objects based on the search string
+        :rtype: List[ourdestiny.bungienetuser]
+        """
+        params = {"q": search_string}
+        search_request = requests.get(self.root_endpoint+"/User/SearchUsers", headers=self.request_header, params=params)#
+        users = []
+        for user_json in search_request.json()["Response"]:
+            users.append(ourdestiny.bungienetuser(user_json))
+        return users
+
+    def get_profile_with_search_string(self, search_string, platform):
+        """
+        Gets a d2profile object based on a search string inputted
+
+        :param search_string: String to search for in usernames
+        :type search_string: string
+        :param platform: The platform the desired profile is on
+        :type platform: string
+        :return: The d2profile of the desired user
+        :rtype: ourdestiny.d2profile
+        """
+
+        platform = self.get_membership_type_enum(platform)
+        search_request = requests.get(self.root_endpoint+"/Destiny2/SearchDestinyPlayer/"+platform+"/"+search_string,
+                                      headers=self.request_header)
+        destiny_membership_id = search_request.json()["Response"][0]["membershipId"]
+        params = {"components": "Profiles"}
+        profile_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+destiny_membership_id,
+                                       headers=self.request_header,
+                                       params=params)
+        return ourdestiny.d2profile(self, profile_request.json()["Response"])
+
+    def get_component_json(self, platform, destiny_membership_id, array_of_enums):
 
         """
         Gets game-related profile information of the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html
@@ -450,15 +507,13 @@ class d2client:
         :rtype: dict
         """
 
-        if self.destiny_membership_id == "":
-            self.get_my_destiny_id(platform)
         platform = self.get_membership_type_enum(platform)
         collated_enums = ""
         for enum in array_of_enums:
             collated_enums = collated_enums + enum + ","
         params = {"components": collated_enums}
         search_request = requests.get(
-            self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + self.destiny_membership_id,
+            self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + destiny_membership_id,
             headers=self.request_header, params=params)
         return search_request.json()
 
