@@ -35,7 +35,7 @@ class d2profile():
         self.membership_id = profile_json["profile"]["data"]["userInfo"]["membershipId"]
         world_cursor = self.client_object.get_world_db_cursor()
         self.current_season = ourdestiny.d2season(self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season"), client_object)
-        characters_json = self.client_object.get_component_json(self.membership_type,self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
+        characters_json = self.client_object.get_component_json(self.membership_type, self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
         self.characters = self.get_character_objects(characters_json)
         self.profile_inventory = []
         self.vault = []
@@ -55,7 +55,7 @@ class d2profile():
         char_prog_json = characters_json["characterProgressions"]["data"]
         char_list = []
         for char_id in char_info_json.keys():
-            char_list.append(ourdestiny.d2character(self.client_object, char_info_json[char_id],
+            char_list.append(ourdestiny.d2character(self, char_info_json[char_id],
                                                     char_inv_json[char_id]["items"],
                                                     char_equip_json[char_id]["items"],
                                                     char_prog_json[char_id]))
@@ -66,8 +66,8 @@ class d2profile():
         try:
             for item in profileinventory_json["data"]["items"]:
                 if item["bucketHash"] == 138197802:
-                    self.vault.append(ourdestiny.d2item(item, self.characters[0]))
+                    self.vault.append(ourdestiny.d2item(item, self))
                 else:
-                    self.profile_inventory.append(ourdestiny.d2item(item, self.characters[0]))
+                    self.profile_inventory.append(ourdestiny.d2item(item, self))
         except KeyError:
             return

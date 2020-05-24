@@ -9,8 +9,8 @@ class d2character():
     The object that represents an in-game character, containing attributes and methods related to character information
     and management. Should be produced by the profile's get_character_object method.
 
-    :param client_object_in: The client object that created the character object. Allows the character object to authenticate and lookup items in database files without needing to rewrite methods or produce multiple client objects
-    :type client_object_in: ourdestiny.d2client
+    :param profile_object_in: The client object that created the character object. Allows the character object to authenticate and lookup items in database files without needing to rewrite methods or produce multiple client objects
+    :type profile_object_in: ourdestiny.d2profile
     :param character_info_json: The JSON containing the basic character data obtained from GetProfile
     :type character_info_json: dict
     :param character_inventory_json: The JSON containing the data for all of the items in the character's inventory obtained from GetProfile
@@ -19,8 +19,8 @@ class d2character():
     :type character_equipped_json: dict
     :param character_progression_json: The JSON containing the data for all of the character progressions
     :type character_progression_json: dict
-    :ivar client_object: The d2client object that created this character object
-    :vartype client_object: ourdestiny.d2client
+    :ivar profile_object: The d2client object that created this character object
+    :vartype profile_object: ourdestiny.d2profile
     :ivar character_id: The character ID for this character
     :vartype character_id: string
     :ivar membership_type: The membership type (platform) enum for the platform this character is on
@@ -55,8 +55,8 @@ class d2character():
     :vartype factions: list
     """
 
-    def __init__(self, client_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json):
-        self.client_object = client_object_in
+    def __init__(self, profile_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json):
+        self.profile_object = profile_object_in
         self.character_id = character_info_json["characterId"]
         self.membership_type = character_info_json["membershipType"]
         self.light = character_info_json["light"]
@@ -66,25 +66,25 @@ class d2character():
         self.discipline = character_info_json["stats"]["1735777505"]
         self.intellect = character_info_json["stats"]["144602215"]
         self.strength = character_info_json["stats"]["4244567218"]
-        self.race = self.client_object.get_from_db(character_info_json["raceHash"], "Race")["displayProperties"]["name"]
-        self.gender = self.client_object.get_from_db(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
-        self.cclass = self.client_object.get_from_db(character_info_json["classHash"], "Class")["displayProperties"]["name"]
+        self.race = self.profile_object.client_object.get_from_db(character_info_json["raceHash"], "Race")["displayProperties"]["name"]
+        self.gender = self.profile_object.client_object.get_from_db(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
+        self.cclass = self.profile_object.client_object.get_from_db(character_info_json["classHash"], "Class")["displayProperties"]["name"]
         inventory_objects = []
         for item in character_inventory_json:
-            inventory_objects.append(ourdestiny.d2item(item, self))
+            inventory_objects.append(ourdestiny.d2item(item, self.profile_object, self))
         self.inventory = inventory_objects
         equipped_objects = []
         for item in character_equipped_json:
-            equipped_objects.append(ourdestiny.d2item(item, self))
+            equipped_objects.append(ourdestiny.d2item(item, self.profile_object, self))
         self.equipped = equipped_objects
         progression_list = []
         for progression_hash in character_progression_json["progressions"].keys():
-            progression_db_json = self.client_object.get_from_db(progression_hash, "Progression")
+            progression_db_json = self.profile_object.client_object.get_from_db(progression_hash, "Progression")
             progression_list.append(ourdestiny.d2progression(progression_db_json))
         self.progressions = progression_list
         faction_list = []
         for faction_hash in character_progression_json["factions"].keys():
-            faction_list.append(ourdestiny.d2faction(self.client_object.get_from_db(faction_hash, "Faction"), self))
+            faction_list.append(ourdestiny.d2faction(self.profile_object.client_object.get_from_db(faction_hash, "Faction"), self))
         self.factions = faction_list
 
     def get_equipped_item_by_name(self, item_name):
@@ -329,7 +329,7 @@ class d2character():
                     "characterId": self.character_id,
                     "membershipType": self.membership_type
             }
-            equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItem/", json=data, headers=self.client_object.request_header)
+            equip_request = requests.post(self.profile_object.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItem/", json=data, headers=self.profile_object.client_object.request_header)
             item_to_equip.become_instanced()
             return equip_request.json()
         else:
@@ -359,7 +359,7 @@ class d2character():
             "characterId": self.character_id,
             "membershipType": self.membership_type
         }
-        equip_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItems/", json=data, headers=self.client_object.request_header)
+        equip_request = requests.post(self.profile_object.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItems/", json=data, headers=self.profile_object.client_object.request_header)
         count = 0
         futures = []
         pool = ThreadPoolExecutor()
@@ -411,5 +411,5 @@ class d2character():
                 "characterId": self.character_id,
                 "membershipType": self.membership_type
             }
-            transfer_request = requests.post(self.client_object.root_endpoint + "/Destiny2/Actions/Items/TransferItem", json=data, headers=self.client_object.request_header)
+            transfer_request = requests.post(self.profile_object.client_object.root_endpoint + "/Destiny2/Actions/Items/TransferItem", json=data, headers=self.profile_object.client_object.request_header)
             return transfer_request.json()

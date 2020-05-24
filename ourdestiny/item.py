@@ -6,8 +6,11 @@ class d2item():
 
     :param item_request_json: The JSON data of the item obtained from the API
     :type item_request_json: dict
-    :param d2characterobject: The object of the character that owns this item
-    :type d2characterobject: d2character
+    :param profile_object_in: The object was used to create this item
+    :type profile_object_in: ourdestiny.d2profile
+    :param character_object_in: The object of the character that owns this item if it has an owner
+    :type character_object_in: ourdestiny.d2character
+
     :ivar description: The description of the item
     :vartype description: string
     :ivar name: The name of the item
@@ -38,23 +41,26 @@ class d2item():
     :vartype stats: list
     :ivar owner_object: The object of the character that owns this object
     :vartype owner_object: ourdestiny.d2character
+    :ivar profile_object: The object of the profile that was used to create this object
+    :vartype profile_object: ourdestiny.d2profile
     :ivar item_hash: The hash value of this item for the database files
     :vartype item_hash: integer
     :ivar bucket_info: The information about what slot this item should fit in - taken directly from the API
     :vartype bucket_info: dict
     """
 
-    def __init__(self, item_request_json, d2characterobject):
+    def __init__(self, item_request_json, profile_object_in, character_object_in=None):
         self.is_equipped = False
         self.can_equip = False
         self.is_instanced_item = False
         self.stats = []
         self.perks = []
         self.attack = None
-        self.owner_object = d2characterobject
+        self.owner_object = character_object_in
+        self.profile_object = profile_object_in
         self.item_hash = item_request_json["itemHash"]
-        item_data_json = self.owner_object.client_object.get_from_db(self.item_hash, "InventoryItem")
-        self.bucket_info = self.owner_object.client_object.get_from_db(item_request_json["bucketHash"], "InventoryBucket")
+        item_data_json = self.profile_object.client_object.get_from_db(self.item_hash, "InventoryItem")
+        self.bucket_info = self.profile_object.client_object.get_from_db(item_request_json["bucketHash"], "InventoryBucket")
         self.description = item_data_json["displayProperties"]["description"]
         self.name = item_data_json["displayProperties"]["name"]
         self.type = item_data_json["itemTypeDisplayName"]
@@ -69,7 +75,7 @@ class d2item():
         except KeyError:
             self.screenshot_url = None
         try:
-            self.lore = self.owner_object.client_object.get_from_db(item_data_json["loreHash"], "Lore")["displayProperties"]["description"]
+            self.lore = self.profile_object.client_object.get_from_db(item_data_json["loreHash"], "Lore")["displayProperties"]["description"]
         except KeyError:
             self.lore = None
         try:
@@ -77,8 +83,8 @@ class d2item():
         except KeyError:
             self.instance_id = None
         try:
-            for stat_hash in self.owner_object.client_object.get_from_db(item_data_json["stats"]["statGroupHash"], "StatGroup")["scaledStats"]:
-                self.stats.append({"name": self.owner_object.client_object.get_from_db(stat_hash["statHash"], "Stat")["displayProperties"]["name"], "value": item_data_json["stats"]["stats"][str(stat_hash["statHash"])]["value"]})
+            for stat_hash in self.profile_object.client_object.get_from_db(item_data_json["stats"]["statGroupHash"], "StatGroup")["scaledStats"]:
+                self.stats.append({"name": self.profile_object.client_object.get_from_db(stat_hash["statHash"], "Stat")["displayProperties"]["name"], "value": item_data_json["stats"]["stats"][str(stat_hash["statHash"])]["value"]})
         except KeyError:
             self.stats = None
 
@@ -89,8 +95,8 @@ class d2item():
         """
 
         if self.instance_id is not None:
-            dbcursor = self.owner_object.client_object.get_world_db_cursor()
-            item_instance_json = self.owner_object.client_object.get_instanced_item(self.owner_object.membership_type, self.instance_id)
+            dbcursor = self.profile_object.client_object.get_world_db_cursor()
+            item_instance_json = self.profile_object.client_object.get_instanced_item(self.owner_object.membership_type, self.instance_id)
             self.can_equip = item_instance_json["instance"]["data"]["canEquip"]
             self.is_equipped = item_instance_json["instance"]["data"]["isEquipped"]
             try:
@@ -101,14 +107,14 @@ class d2item():
                 self.stats = []
                 stat_hashes = item_instance_json["stats"]["data"]["stats"].keys()
                 for stat_hash in stat_hashes:
-                    self.stats.append({"name": self.owner_object.client_object.get_hash_with_cursor(stat_hash, dbcursor, "Stat")["displayProperties"]["name"], "value": item_instance_json["stats"]["data"]["stats"][stat_hash]["value"]})
+                    self.stats.append({"name": self.profile_object.client_object.get_hash_with_cursor(stat_hash, dbcursor, "Stat")["displayProperties"]["name"], "value": item_instance_json["stats"]["data"]["stats"][stat_hash]["value"]})
 
             except KeyError:
                 self.stats = []
             self.is_instanced_item = True
             try:
                 for perk in item_instance_json["perks"]["data"]["perks"]:
-                    perk_json = self.owner_object.client_object.get_hash_with_cursor(perk["perkHash"], dbcursor, "SandboxPerk")
+                    perk_json = self.profile_object.client_object.get_hash_with_cursor(perk["perkHash"], dbcursor, "SandboxPerk")
                     perk_dict = {"name": perk_json["displayProperties"]["name"], "description": perk_json["displayProperties"]["description"], "isActive": perk["isActive"], "isVisible": perk["visible"]}
                     if perk_json["displayProperties"]["hasIcon"]:
                         perk_dict["icon"] = "https://www.bungie.net" + perk_json["displayProperties"]["icon"]

@@ -515,6 +515,7 @@ class d2client:
             headers=self.request_header, params=params)
         return search_request.json()
 
+    # Move this to profile
     def get_instanced_item(self, platform, instance_id):
 
         """
