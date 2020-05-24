@@ -15,12 +15,16 @@ class d2profile():
     :vartype client_object: ourdestiny.d2client
     :ivar display_name: The display name for this profile
     :vartype display_name: string
-    :ivar membership_type: The membership type enumerator used to represent the platform this profile is registered on#
+    :ivar membership_type: The membership type enumerator used to represent the platform this profile is registered on
     :vartype membership_type: integer
     :ivar membership_id: The membership ID for this profile
     :vartype membership_id: string
     :ivar characters: A list of characters attached to this profile
     :vartype characters: List[ourdestiny.d2character]
+    :ivar vault: The items in the profile's vault
+    :vartype vault: List[ourdestiny.d2item]
+    :ivar profile_inventory: The profile-level inventory containing items such as planetary currencies and mods
+    :vartype profile_inventory: List[ourdestiny.d2item]
     :ivar current_season: A season object of the current season in the game
     :vartype current_season: ourdestiny.d2season
     """
@@ -33,6 +37,9 @@ class d2profile():
         self.current_season = ourdestiny.d2season(self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season"), client_object)
         characters_json = self.client_object.get_component_json(self.membership_type,self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
         self.characters = self.get_character_objects(characters_json)
+        self.profile_inventory = []
+        self.vault = []
+        self.get_profile_inventories(profile_json["profileInventory"])
 
     def get_character_objects(self, characters_json):
 
@@ -53,3 +60,14 @@ class d2profile():
                                                     char_equip_json[char_id]["items"],
                                                     char_prog_json[char_id]))
         return char_list
+
+    def get_profile_inventories(self, profileinventory_json):
+
+        try:
+            for item in profileinventory_json["data"]["items"]:
+                if item["bucketHash"] == 138197802:
+                    self.vault.append(ourdestiny.d2item(item, self.characters[0]))
+                else:
+                    self.profile_inventory.append(ourdestiny.d2item(item, self.characters[0]))
+        except KeyError:
+            return

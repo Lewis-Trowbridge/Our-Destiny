@@ -5,7 +5,6 @@ import sqlite3
 import urllib.parse as urlparse
 import zipfile
 import requests
-from concurrent.futures import ThreadPoolExecutor, wait
 import ourdestiny
 
 
@@ -109,7 +108,6 @@ class d2client:
             "refresh_token": self.refresh_token
         }
         token_request = requests.post(url, data=form)
-        print(token_request.json())
         self.store_access_token(token_request.json())
 
     def store_access_token(self, token_request_json):
@@ -431,7 +429,7 @@ class d2client:
         if self.destiny_membership_id == "":
             self.get_my_destiny_id(platform)
         platform = self.get_membership_type_enum(platform)
-        params = {"components": "Profiles"}
+        params = {"components": "Profiles,ProfileInventories"}
         profile_request = requests.get(
             self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id,
             headers=self.request_header,
@@ -488,7 +486,7 @@ class d2client:
         search_request = requests.get(self.root_endpoint+"/Destiny2/SearchDestinyPlayer/"+platform+"/"+search_string,
                                       headers=self.request_header)
         destiny_membership_id = search_request.json()["Response"][0]["membershipId"]
-        params = {"components": "Profiles"}
+        params = {"components": "Profiles,ProfileInventories"}
         profile_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+destiny_membership_id,
                                        headers=self.request_header,
                                        params=params)
