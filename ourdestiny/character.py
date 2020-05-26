@@ -19,6 +19,7 @@ class d2character():
     :type character_equipped_json: dict
     :param character_progression_json: The JSON containing the data for all of the character progressions
     :type character_progression_json: dict
+
     :ivar profile_object: The d2client object that created this character object
     :vartype profile_object: ourdestiny.d2profile
     :ivar character_id: The character ID for this character
@@ -46,13 +47,15 @@ class d2character():
     :ivar cclass: The class of this character - note the extra c, since "class" is a reserved keyword
     :vartype cclass: string
     :ivar inventory: A list of d2item objects in the character's inventory
-    :vartype inventory: list
+    :vartype inventory: List[ourdestiny.d2item]
+    :ivar postmaster: A list of d2item objects in the character's postmaster inventory
+    :vartype postmaster: List[ourdestiny.d2item]
     :ivar equipped: A list of d2item objects currently equipped to the character
-    :vartype equipped: list
+    :vartype equipped: List[ourdestiny.d2item]
     :ivar progressions: A list of d2progression objects containing data about progressions on this character - e.g glory ranks, infamy ranks
-    :vartype progressions: list
+    :vartype progressions: List[ourdestiny.d2progression]
     :ivar factions: A list of d2faction objects containing data about factions
-    :vartype factions: list
+    :vartype factions: List[ourdestiny.d2faction]
     """
 
     def __init__(self, profile_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json):
@@ -70,9 +73,14 @@ class d2character():
         self.gender = self.profile_object.client_object.get_from_db(character_info_json["genderHash"], "Gender")["displayProperties"]["name"]
         self.cclass = self.profile_object.client_object.get_from_db(character_info_json["classHash"], "Class")["displayProperties"]["name"]
         inventory_objects = []
+        postmaster_objects = []
         for item in character_inventory_json:
-            inventory_objects.append(ourdestiny.d2item(item, self.profile_object, self))
+            if item["bucketHash"] != 215593132:
+                inventory_objects.append(ourdestiny.d2item(item, self.profile_object, self))
+            else:
+                postmaster_objects.append(ourdestiny.d2item(item, self.profile_object, self))
         self.inventory = inventory_objects
+        self.postmaster = postmaster_objects
         equipped_objects = []
         for item in character_equipped_json:
             equipped_objects.append(ourdestiny.d2item(item, self.profile_object, self))
