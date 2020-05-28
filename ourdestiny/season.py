@@ -19,7 +19,7 @@ class d2season():
     :vartype season_number: integer
     :ivar start_date: The start date of this season
     :vartype start_date: datetime
-    :ivar end_date: The end date of this season
+    :ivar end_date: The end date of this season - can be none where the season's end date is not confirmed yet
     :vartype end_date: datetime
 
     """
@@ -29,4 +29,7 @@ class d2season():
         self.description = season_json["displayProperties"]["description"]
         self.season_number = season_json["seasonNumber"]
         self.start_date = datetime.datetime.strptime(season_json["startDate"], "%Y-%m-%dT%H:%M:%SZ")
-        self.end_date = datetime.datetime.strptime(season_json["endDate"], "%Y-%m-%dT%H:%M:%SZ")
+        try:
+            self.end_date = datetime.datetime.strptime(season_json["endDate"], "%Y-%m-%dT%H:%M:%SZ")
+        except KeyError:
+            self.end_date = None

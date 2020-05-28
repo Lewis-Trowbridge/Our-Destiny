@@ -25,6 +25,8 @@ class d2profile():
     :vartype vault: List[ourdestiny.d2item]
     :ivar profile_inventory: The profile-level inventory containing items such as planetary currencies and mods
     :vartype profile_inventory: List[ourdestiny.d2item]
+    :ivar seasons: The seasons this character owns
+    :vartype seasons: List[ourdestiny.d2season]
     :ivar current_season: A season object of the current season in the game
     :vartype current_season: ourdestiny.d2season
     """
@@ -35,6 +37,9 @@ class d2profile():
         self.membership_id = profile_json["profile"]["data"]["userInfo"]["membershipId"]
         world_cursor = self.client_object.get_world_db_cursor()
         self.current_season = ourdestiny.d2season(self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season"), client_object)
+        self.seasons = []
+        for season_hash in profile_json["profile"]["data"]["seasonHashes"]:
+            self.seasons.append(ourdestiny.d2season(self.client_object.get_hash_with_cursor(season_hash, world_cursor, "Season"), client_object))
         characters_json = self.client_object.get_component_json(self.membership_type, self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
         self.characters = self.get_character_objects(characters_json)
         self.profile_inventory = []
