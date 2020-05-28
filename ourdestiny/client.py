@@ -319,17 +319,11 @@ class d2client:
 
         platform = str(platform)
         if not str.isnumeric(platform):
-            if platform == "Xbox" or platform == "XBL":
-                return "1"
-            elif platform == "PSN" or platform == "Playstation":
-                return "2"
-            elif platform == "Steam":
-                return "3"
-            elif platform == "Blizzard":
-                return "4"
-            elif platform == "Stadia":
-                return "5"
-            else:
+            enum_dict = {"Xbox": "1", "XBL": "1", "PSN": "2", "Playstation": "2", "Steam": "3", "Blizzard": "4",
+                         "Stadia": "5"}
+            try:
+                return enum_dict[platform]
+            except KeyError:
                 return "-1"
         else:
             return platform
