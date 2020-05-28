@@ -21,6 +21,8 @@ class d2item():
     :vartype type: string
     :ivar tier: The tier of the item (Legendary, Rare, Common...)
     :vartype tier: string
+    :ivar quantity: The quantity of the item (normally 1 but can be more in the case of currency items)
+    :vartype quantity: integer
     :ivar icon_url: The URL to the icon of the item (if it has one)
     :vartype icon_url: string
     :ivar screenshot_url: The URL of the in-game screenshot of the item normally used for backgrounds to items (if it has one)
@@ -56,6 +58,7 @@ class d2item():
         self.stats = []
         self.perks = []
         self.attack = None
+        self.quantity = item_request_json["quantity"]
         self.owner_object = character_object_in
         self.profile_object = profile_object_in
         self.item_hash = item_request_json["itemHash"]

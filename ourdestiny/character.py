@@ -179,7 +179,6 @@ class d2character():
         pool.shutdown()
         return items_gotten
 
-
     def get_instanced_inventory_item_by_name(self, item_name):
 
         """
@@ -421,3 +420,42 @@ class d2character():
             }
             transfer_request = requests.post(self.profile_object.client_object.root_endpoint + "/Destiny2/Actions/Items/TransferItem", json=data, headers=self.profile_object.client_object.request_header)
             return transfer_request.json()
+
+    def pull_from_postmaster(self, item_to_pull, stack_size=1):
+        """
+        Pulls an item from the postmaster into the relevant inventory bucket
+
+        :param item_to_pull: The item to pull from the postmaster
+        :type item_to_pull: ourdestiny.d2item
+        :param stack_size: The number of items in the stack you want to pull - defaults to 1
+        :type stack_size: integer
+        :return: The response JSON from the API
+        :rtype: dict
+        """
+
+        if item_to_pull.owner_object == self and item_to_pull.bucket_info["hash"] == 215593132:
+            data = {
+                "itemReferenceHash": item_to_pull.item_hash,
+                "stackSize": stack_size,
+                "itemId": item_to_pull.instance_id,
+                "characterId": self.character_id,
+                "membershipType": self.membership_type
+            }
+            pull_request = requests.post(self.profile_object.client_object.root_endpoint +
+                                         "/Destiny2/Actions/Items/PullFromPostmaster",
+                                         headers=self.profile_object.client_object.request_header, json=data)
+            if pull_request.json()["ErrorStatus"] == "Success":
+                new_quantity = item_to_pull.quantity - stack_size
+                if new_quantity == 0:
+                    self.postmaster.remove(item_to_pull)
+                    if item_to_pull.type == "Consumable" or item_to_pull.type == "Redeemable":
+                        # TODO: Add better handling once methods to get items from profile inventories exist
+                        pass
+                    else:
+                        # TODO: Change bucket info once better methods for handling those exist to be the item's actual bucket info rather than the postmaster's
+                        self.inventory.append(item_to_pull)
+            else:
+                # TODO: Add proper exception once custom exceptions are implemented
+                raise Exception(pull_request.json()["Message"])
+            
+            return pull_request.json()
