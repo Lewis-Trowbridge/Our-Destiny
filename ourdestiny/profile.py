@@ -36,10 +36,10 @@ class d2profile():
         self.membership_type = profile_json["profile"]["data"]["userInfo"]["membershipType"]
         self.membership_id = profile_json["profile"]["data"]["userInfo"]["membershipId"]
         world_cursor = self.client_object.get_world_db_cursor()
-        self.current_season = ourdestiny.d2season(self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season"), client_object)
+        self.current_season = ourdestiny.d2season(self.client_object.get_hash_with_cursor(profile_json["profile"]["data"]["currentSeasonHash"], world_cursor, "Season"), self)
         self.seasons = []
         for season_hash in profile_json["profile"]["data"]["seasonHashes"]:
-            self.seasons.append(ourdestiny.d2season(self.client_object.get_hash_with_cursor(season_hash, world_cursor, "Season"), client_object))
+            self.seasons.append(ourdestiny.d2season(self.client_object.get_hash_with_cursor(season_hash, world_cursor, "Season"), self))
         characters_json = self.client_object.get_component_json(self.membership_type, self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
         self.characters = self.get_character_objects(characters_json)
         self.profile_inventory = []

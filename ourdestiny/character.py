@@ -88,7 +88,7 @@ class d2character():
         progression_list = []
         for progression_hash in character_progression_json["progressions"].keys():
             progression_db_json = self.profile_object.client_object.get_from_db(progression_hash, "Progression")
-            progression_list.append(ourdestiny.d2progression(progression_db_json))
+            progression_list.append(ourdestiny.d2progression(progression_db_json, self.profile_object))
         self.progressions = progression_list
         faction_list = []
         for faction_hash in character_progression_json["factions"].keys():

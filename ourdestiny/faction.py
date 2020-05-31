@@ -29,4 +29,4 @@ class d2faction():
         self.description = faction_json["displayProperties"]["description"]
         if faction_json["displayProperties"]["hasIcon"]:
             self.icon = "https://bungie.net" + faction_json["displayProperties"]["icon"]
-        self.progression = d2progression(self.character_object.profile_object.client_object.get_from_db(faction_json["progressionHash"], "Progression"))
+        self.progression = d2progression(self.character_object.profile_object.client_object.get_from_db(faction_json["progressionHash"], "Progression"), self.character_object.profile_object)

@@ -63,7 +63,10 @@ class d2item():
         self.profile_object = profile_object_in
         self.item_hash = item_request_json["itemHash"]
         item_data_json = self.profile_object.client_object.get_from_db(self.item_hash, "InventoryItem")
-        self.bucket_info = self.profile_object.client_object.get_from_db(item_request_json["bucketHash"], "InventoryBucket")
+        try:
+            self.bucket_info = self.profile_object.client_object.get_from_db(item_request_json["bucketHash"], "InventoryBucket")
+        except KeyError:
+            self.bucket_info = None
         self.description = item_data_json["displayProperties"]["description"]
         self.name = item_data_json["displayProperties"]["name"]
         self.type = item_data_json["itemTypeDisplayName"]
