@@ -6,3 +6,4 @@ from ourdestiny.item import *
 from ourdestiny.progressions import *
 from ourdestiny.faction import *
 from ourdestiny.season import *
+from ourdestiny.activity import *

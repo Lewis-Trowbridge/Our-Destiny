@@ -40,7 +40,7 @@ class d2profile():
         self.seasons = []
         for season_hash in profile_json["profile"]["data"]["seasonHashes"]:
             self.seasons.append(ourdestiny.d2season(self.client_object.get_hash_with_cursor(season_hash, world_cursor, "Season"), self))
-        characters_json = self.client_object.get_component_json(self.membership_type, self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions"])["Response"]
+        characters_json = self.client_object.get_component_json(self.membership_type, self.membership_id, ["Characters", "CharacterInventories", "CharacterEquipment", "CharacterProgressions", "CharacterActivities"])["Response"]
         self.characters = self.get_character_objects(characters_json)
         self.profile_inventory = []
         self.vault = []
@@ -58,12 +58,14 @@ class d2profile():
                 char_inv_json[char_id] = {"items": []}
         char_equip_json = characters_json["characterEquipment"]["data"]
         char_prog_json = characters_json["characterProgressions"]["data"]
+        char_act_json = characters_json["characterActivities"]["data"]
         char_list = []
         for char_id in char_info_json.keys():
             char_list.append(ourdestiny.d2character(self, char_info_json[char_id],
                                                     char_inv_json[char_id]["items"],
                                                     char_equip_json[char_id]["items"],
-                                                    char_prog_json[char_id]))
+                                                    char_prog_json[char_id],
+                                                    char_act_json[char_id]))
         return char_list
 
     def get_profile_inventories(self, profileinventory_json):

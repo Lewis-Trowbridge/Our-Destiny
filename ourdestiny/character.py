@@ -19,6 +19,8 @@ class d2character():
     :type character_equipped_json: dict
     :param character_progression_json: The JSON containing the data for all of the character progressions
     :type character_progression_json: dict
+    :param character_activities_json: The JSON containing the data for all of the character's available and current activities
+    :type character_activities_json: dict
 
     :ivar profile_object: The d2client object that created this character object
     :vartype profile_object: ourdestiny.d2profile
@@ -52,13 +54,17 @@ class d2character():
     :vartype postmaster: List[ourdestiny.d2item]
     :ivar equipped: A list of d2item objects currently equipped to the character
     :vartype equipped: List[ourdestiny.d2item]
+    :ivar current_activity: The current activity the character is in, if it is in one
+    :vartype current_activity: ourdestiny.d2activity
+    :ivar available_activities: The activities available to this character
+    :vartype available_activities: List[ourdestiny.d2activity]
     :ivar progressions: A list of d2progression objects containing data about progressions on this character - e.g glory ranks, infamy ranks
     :vartype progressions: List[ourdestiny.d2progression]
     :ivar factions: A list of d2faction objects containing data about factions
     :vartype factions: List[ourdestiny.d2faction]
     """
 
-    def __init__(self, profile_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json):
+    def __init__(self, profile_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json, character_activities_json):
         self.profile_object = profile_object_in
         self.character_id = character_info_json["characterId"]
         self.membership_type = character_info_json["membershipType"]
@@ -94,6 +100,13 @@ class d2character():
         for faction_hash in character_progression_json["factions"].keys():
             faction_list.append(ourdestiny.d2faction(self.profile_object.client_object.get_from_db(faction_hash, "Faction"), self))
         self.factions = faction_list
+        if character_activities_json["currentActivityHash"] != 0:
+            self.current_activity = ourdestiny.d2activity(profile_object_in.client_object.get_from_db(character_activities_json["currentActivityHash"], "Activity"), self.profile_object)
+        else:
+            self.current_activity = None
+        self.available_activities = []
+        for available_activity in character_activities_json["availableActivities"]:
+            self.available_activities.append(ourdestiny.d2activity(profile_object_in.client_object.get_from_db(available_activity["activityHash"], "Activity"), self.profile_object))
 
     def get_equipped_item_by_name(self, item_name):
 

@@ -23,6 +23,7 @@ To understand more about these objects, go to the :doc:`objects` page
    bungienetuser
    profile
    character
+   activity
    item
    faction
    progression
