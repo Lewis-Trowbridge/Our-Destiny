@@ -5,6 +5,11 @@ class d2activity():
     """
     A class used to represent an activity, selectable from the director
 
+    :param activity_json: The JSON obtained from the database containing information about the activity
+    :type activity_json:
+    :param profile_object: The profile object used to obtain this object
+    :type profile_object: ourdestiny.d2profile
+
     :ivar name: The name of the activity
     :vartype name: string
     :ivar description: The description of the activity
@@ -49,3 +54,35 @@ class d2activity():
             self.rewards.append(reward_tier_list)
             for reward_item in reward_tier["rewardItems"]:
                 reward_tier_list.append(ourdestiny.d2item(reward_item, profile_object))
+        self.activity_type = d2activitytype(profile_object.client_object.get_from_db(activity_json["activityTypeHash"], "ActivityType"))
+
+
+class d2activitytype:
+
+    """
+    A class used to represent an activity type
+
+    :param activity_type_json: The JSON of the activity type obtained from the database
+    :type activity_type_json: dict
+
+    :ivar name: The name of the activity type
+    :vartype name: string
+    :ivar description: The description of the activity type
+    :vartype description: string
+    :ivar hash: The hash of the activity type
+    :vartype hash: integer
+    :ivar icon: The URL of the icon, if this activity type has one
+    :vartype icon: string
+    """
+
+    def __init__(self, activity_type_json):
+        self.name = activity_type_json["displayProperties"]["name"]
+        try:
+            self.description = activity_type_json["displayProperties"]["description"]
+        except KeyError:
+            self.description = None
+        self.hash = activity_type_json["hash"]
+        if activity_type_json["displayProperties"]["hasIcon"]:
+            self.icon = "https://bungie.net" + activity_type_json["displayProperties"]["icon"]
+        else:
+            self.icon = None
