@@ -98,7 +98,8 @@ class d2character():
         self.progressions = progression_list
         faction_list = []
         for faction_hash in character_progression_json["factions"].keys():
-            faction_list.append(ourdestiny.d2faction(self.profile_object.client_object.get_from_db(faction_hash, "Faction"), self))
+            faction_list.append(ourdestiny.d2faction(character_progression_json["factions"][faction_hash],
+                                                     self.profile_object.client_object.get_from_db(faction_hash, "Faction"), self))
         self.factions = faction_list
         if character_activities_json["currentActivityHash"] != 0:
             self.current_activity = ourdestiny.d2activity(profile_object_in.client_object.get_from_db(character_activities_json["currentActivityHash"], "Activity"), self.profile_object)
