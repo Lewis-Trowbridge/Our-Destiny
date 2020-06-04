@@ -230,7 +230,6 @@ class d2character():
         pool.shutdown()
         return items_gotten
 
-
     def get_instanced_item_by_name(self, item_name):
 
         """

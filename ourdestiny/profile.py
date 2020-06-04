@@ -1,5 +1,5 @@
 import ourdestiny
-
+import requests
 
 class d2profile():
 
@@ -78,3 +78,23 @@ class d2profile():
                     self.profile_inventory.append(ourdestiny.d2item(item, self))
         except KeyError:
             return
+
+    def get_instanced_item(self, instance_id):
+
+        """
+        Gets an instanced item data
+
+        :param instance_id: The id of the item to get instanced data of
+        :type instance_id: string
+        :return: Instanced data about the item - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyItemResponse.html
+        :rtype: dict
+        """
+
+        params = {
+            "components": "ItemInstances,ItemStats,ItemPerks"
+        }
+        item_request = requests.get(
+            self.client_object.root_endpoint + "/Destiny2/" + str(self.membership_type) + "/Profile/" + self.membership_id +
+            "/Item/" + instance_id,
+            params=params, headers=self.client_object.request_header)
+        return item_request.json()["Response"]

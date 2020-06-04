@@ -102,7 +102,7 @@ class d2item():
 
         if self.instance_id is not None:
             dbcursor = self.profile_object.client_object.get_world_db_cursor()
-            item_instance_json = self.profile_object.client_object.get_instanced_item(self.owner_object.membership_type, self.instance_id)
+            item_instance_json = self.profile_object.get_instanced_item(self.instance_id)
             self.can_equip = item_instance_json["instance"]["data"]["canEquip"]
             self.is_equipped = item_instance_json["instance"]["data"]["isEquipped"]
             try:

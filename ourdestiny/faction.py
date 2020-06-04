@@ -14,7 +14,7 @@ class d2faction():
     :param character_object: The d2character object which this object represents the relationship of.
     :type character_object: ourdestiny.d2character
 
-    :ivar name: The name of the faction - this might not always be what you associate the faction with (e.g Brother Vance's faction is "Followers of Osiris)
+    :ivar name: The name of the faction - this might not always be what you associate the faction with (e.g Brother Vance's faction is "Followers of Osiris")
     :vartype name: string
     :ivar description: The description of the faction
     :vartype description: string

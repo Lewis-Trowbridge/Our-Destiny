@@ -71,13 +71,19 @@ class d2client:
 
     def get_auth_code_url(self):
         url = "https://www.bungie.net/en/OAuth/Authorize"
+        state = secrets.token_urlsafe(32)
         params = {
             "response_type": "code",
             "client_id": self.client_id,
-            "state": secrets.token_urlsafe(32)
+            "state": state
         }
         auth_request = requests.get(url, params)
-        return auth_request.url
+        returned_state = urlparse.urlparse(auth_request.url).query.split("state=")[1].split("&")[0]
+        if state == returned_state:
+            return auth_request.url
+        else:
+            # TODO: Add proper exception here once custom exceptions are implemented
+            raise Exception("Remote state does not match current state, aborting")
 
     def get_auth_code_from_url(self, auth_request_url):
         auth_code_url = input(
@@ -508,26 +514,3 @@ class d2client:
             self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + destiny_membership_id,
             headers=self.request_header, params=params)
         return search_request.json()
-
-    # Move this to profile
-    def get_instanced_item(self, platform, instance_id):
-
-        """
-        Gets an instanced item data
-
-        :param platform: The name or enum of the platform the current user is on
-        :type platform: string, integer
-        :param instance_id: The id of the item to get instanced data of
-        :type instance_id: string
-        :return: Instanced data about the item - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyItemResponse.html
-        :rtype: dict
-        """
-
-        platform = self.get_membership_type_enum(platform)
-        params = {
-            "components": "ItemInstances,ItemStats,ItemPerks"
-        }
-        item_request = requests.get(
-            self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + self.destiny_membership_id + "/Item/" + instance_id,
-            params=params, headers=self.request_header)
-        return item_request.json()["Response"]
