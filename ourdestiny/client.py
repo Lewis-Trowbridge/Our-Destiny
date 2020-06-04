@@ -78,18 +78,19 @@ class d2client:
             "state": state
         }
         auth_request = requests.get(url, params)
-        returned_state = urlparse.urlparse(auth_request.url).query.split("state=")[1].split("&")[0]
-        if state == returned_state:
-            return auth_request.url
-        else:
-            # TODO: Add proper exception here once custom exceptions are implemented
-            raise Exception("Remote state does not match current state, aborting")
+        return auth_request.url
 
     def get_auth_code_from_url(self, auth_request_url):
         auth_code_url = input(
             "Please click on this link, and then paste back in the URL you get:\n" + auth_request_url + "\n").strip()
         parser = urlparse.urlparse(auth_code_url)
-        self.auth_code = parser.query.split("&")[0].replace("code=", "").strip()
+        sent_state = urlparse.urlparse(auth_request_url).query.split("state=")[1].split("&")[0]
+        returned_state = urlparse.urlparse(auth_code_url).query.split("state=")[1].split("&")[0]
+        if sent_state == returned_state:
+            self.auth_code = parser.query.split("&")[0].replace("code=", "").strip()
+        else:
+            # TODO: Use proper exception when custom exceptions are introduced
+            raise Exception("Remote state does not match current state, aborting")
 
     def get_auth_code(self):
         self.get_auth_code_from_url(self.get_auth_code_url())
