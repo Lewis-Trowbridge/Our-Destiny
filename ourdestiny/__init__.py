@@ -1,3 +1,4 @@
+from ourdestiny.exceptions import *
 from ourdestiny.client import *
 from ourdestiny.profile import *
 from ourdestiny.bungienet import *

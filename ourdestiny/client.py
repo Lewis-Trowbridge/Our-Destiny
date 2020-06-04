@@ -89,8 +89,7 @@ class d2client:
         if sent_state == returned_state:
             self.auth_code = parser.query.split("&")[0].replace("code=", "").strip()
         else:
-            # TODO: Use proper exception when custom exceptions are introduced
-            raise Exception("Remote state does not match current state, aborting")
+            raise ourdestiny.StatesDoNotMatch("Remote state does not match current state, aborting")
 
     def get_auth_code(self):
         self.get_auth_code_from_url(self.get_auth_code_url())

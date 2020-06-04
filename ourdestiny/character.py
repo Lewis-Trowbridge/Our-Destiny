@@ -444,6 +444,10 @@ class d2character():
         :type stack_size: integer
         :return: The response JSON from the API
         :rtype: dict
+
+        :raises NoRoomInDestination: There is not room in the bucket the item is being pulled into
+        :raises ItemNotInBucket: The item is not currently being held in the postmaster
+        :raises ItemNotFound: The item is not found on the API's end
         """
 
         if item_to_pull.owner_object == self and item_to_pull.bucket_info["hash"] == 215593132:
@@ -457,7 +461,8 @@ class d2character():
             pull_request = requests.post(self.profile_object.client_object.root_endpoint +
                                          "/Destiny2/Actions/Items/PullFromPostmaster",
                                          headers=self.profile_object.client_object.request_header, json=data)
-            if pull_request.json()["ErrorStatus"] == "Success":
+            response_json = pull_request.json()
+            if response_json["ErrorStatus"] == "Success":
                 new_quantity = item_to_pull.quantity - stack_size
                 if new_quantity == 0:
                     self.postmaster.remove(item_to_pull)
@@ -468,7 +473,15 @@ class d2character():
                         # TODO: Change bucket info once better methods for handling those exist to be the item's actual bucket info rather than the postmaster's
                         self.inventory.append(item_to_pull)
             else:
-                # TODO: Add proper exception once custom exceptions are implemented
-                raise Exception(pull_request.json()["Message"])
-            
+                if response_json["ErrorCode"] == 1623:
+                    raise ourdestiny.ItemNotFound(item_to_pull, response_json["Message"])
+                elif response_json["ErrorCode"] == 1642:
+                    raise ourdestiny.NoRoomInDestination(item_to_pull, response_json["Message"])
+                else:
+                    raise ourdestiny.OurDestinyError(pull_request.json()["Message"])
             return pull_request.json()
+        else:
+            if item_to_pull.owner_object != self:
+                raise ourdestiny.ItemDoesNotBelongToCharacter(item_to_pull, self)
+            elif item_to_pull.bucket_info["hash"] != 215593132:
+                raise ourdestiny.ItemNotInBucket(item_to_pull)

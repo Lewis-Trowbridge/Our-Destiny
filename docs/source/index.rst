@@ -29,6 +29,8 @@ To understand more about these objects, go to the :doc:`objects` page
    progression
    season
 
+   exceptions
+
 Installation
 ------------
 
