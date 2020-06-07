@@ -1,3 +1,4 @@
+import ourdestiny
 
 class d2item():
 
@@ -130,4 +131,4 @@ class d2item():
             except KeyError:
                 pass
         else:
-            raise Exception("Item does not have an instance ID")
+            raise ourdestiny.ItemCannotBeInstanced(self)

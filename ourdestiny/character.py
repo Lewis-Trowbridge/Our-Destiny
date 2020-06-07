@@ -334,7 +334,7 @@ class d2character():
     def equip_item(self, item_to_equip):
 
         """
-        Takes an *instanced* d2item object, and equips it if it is instanced, is equippable, and belongs to the current character
+        Takes a d2item object, and equips it if it can be instanced, is equippable, and belongs to the current character
 
         :param item_to_equip: The object of the item to be equipped to the current character
         :type item_to_equip: ourdestiny.d2item
@@ -343,7 +343,7 @@ class d2character():
         """
 
         item_to_equip.become_instanced()
-        if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
+        if item_to_equip.instance_id is not None and item_to_equip.can_equip and item_to_equip.owner_object == self:
             data = {
                     "itemId": item_to_equip.instance_id,
                     "characterId": self.character_id,
@@ -353,27 +353,42 @@ class d2character():
             item_to_equip.become_instanced()
             return equip_request.json()
         else:
-            raise Exception("Item cannot be equipped")
+            if item_to_equip.instance_id is None:
+                raise ourdestiny.ItemCannotBeInstanced(item_to_equip)
+            elif item_to_equip.can_equip is False:
+                raise ourdestiny.NoRoomInDestination(item_to_equip, "Cannot equip item " + item_to_equip.name)
+            elif item_to_equip.owner_object != self:
+                raise ourdestiny.ItemDoesNotBelongToCharacter(item_to_equip, self)
 
     def equip_items(self, array_of_items_to_equip):
 
         """
-        Takes an array of *instanced* items, and equips them if they are instanced, equippable and belong to the current character
+        Takes an array of items, and equips them if they can be instanced, equippable and belong to the current character
 
         :param array_of_items_to_equip: A list of item objects to be equipped to the current character
-        :type array_of_items_to_equip: List[ourdestiny.d2item]
+        :type array_of_items_to_equip: list[ourdestiny.d2item]
         :return: The response JSON from the API - see https://bungie-net.github.io/multi/schema_Destiny-DestinyEquipItemResults.html
         :rtype: dict
+
+        :raises ItemCannotBeInstanced: Raised when an item is passed in that has no instance ID, and therefore cannot be instanced, and in turn cannot be equipped
+        :raises NoRoomInDestination: Raised when an item cannot be equipped because there is no space - for example, trying to equip more than 1 exotic weapon at a time
+        :raises ItemDoesNotBelongToCharacter: Raised when an item passed in does not belong to this character
         """
 
         item_ids = []
         items_replaced = []
+        # TODO: Refresh items here before checking whether they can be equipped
         for item_to_equip in array_of_items_to_equip:
-            if item_to_equip.is_instanced_item and item_to_equip.can_equip and item_to_equip.owner_object == self:
+            if item_to_equip.instance_id is not None and item_to_equip.can_equip and item_to_equip.owner_object == self:
                 item_ids.append(item_to_equip.instance_id)
                 items_replaced.append(self.get_item_in_same_slot(item_to_equip))
             else:
-                raise Exception(item_to_equip.name + "cannot be equipped")
+                if item_to_equip.instance_id is None:
+                    raise ourdestiny.ItemCannotBeInstanced(item_to_equip)
+                elif item_to_equip.can_equip is False:
+                    raise ourdestiny.NoRoomInDestination(item_to_equip, "Cannot equip item " + item_to_equip.name)
+                elif item_to_equip.owner_object != self:
+                    raise ourdestiny.ItemDoesNotBelongToCharacter(item_to_equip, self)
         data = {
             "itemIds": item_ids,
             "characterId": self.character_id,
@@ -383,6 +398,7 @@ class d2character():
         count = 0
         futures = []
         pool = ThreadPoolExecutor()
+        # Attempt to refresh items
         for item_to_equip in array_of_items_to_equip:
             futures.append(pool.submit(item_to_equip.become_instanced))
             futures.append(pool.submit(items_replaced[count].become_instanced))

@@ -24,9 +24,9 @@ class ItemDoesNotBelongToCharacter(OurDestinyError):
     """
     Exception for when an operation performed on an item involving the owner of that item is faced with another character, or that item has no owner
 
-    :ivar item: The item in question
+    :ivar item: The item attempting to be equipped
     :vartype item: ourdestiny.d2item
-    :ivar character: The character in question
+    :ivar character: The character attempting to equip the item
     :vartype character: ourdestiny.d2character
     """
 
@@ -57,7 +57,7 @@ class NoRoomInDestination(OurDestinyError):
 class ItemNotFound(OurDestinyError):
 
     """
-    Exception for when an item is referenced but does not appear to exist on the Destiny servers
+    Exception for when an item is referenced but does not appear to exist
 
     :ivar item: The item in question
     :vartype item: ourdestiny.d2item
@@ -69,6 +69,28 @@ class ItemNotFound(OurDestinyError):
         self.item = item
         self.message = message
         super().__init__(self.message)
+
+
+class ItemNotInstanced(OurDestinyError):
+
+    """
+    Exception for when an operation requires an item be instanced, but it is not
+    """
+
+    def __init__(self, item):
+        self.item = item
+        self.message = "Item " + item.name + " is not instanced."
+        super().__init__(self.message)
+
+
+class ItemCannotBeInstanced(OurDestinyError):
+    """
+    Exception for when an attempt is made to instance an item, but it has no instance ID, and cannot be instanced
+    """
+
+    def __init__(self, item):
+        self.item = item
+        self.message = "Item " + item.name + " cannot be instanced."
 
 
 class StatesDoNotMatch(OurDestinyError):
