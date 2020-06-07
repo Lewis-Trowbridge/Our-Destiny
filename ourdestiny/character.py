@@ -340,6 +340,10 @@ class d2character():
         :type item_to_equip: ourdestiny.d2item
         :return: The response JSON from the API - see https://bungie-net.github.io/multi/operation_post_Destiny2-EquipItem.html
         :rtype: dict
+
+        :raises ItemCannotBeInstanced: Raised when an item is passed in that has no instance ID, and therefore cannot be instanced, and in turn cannot be equipped
+        :raises NoRoomInDestination: Raised when an item cannot be equipped because there is no space - for example, trying to equip more than 1 exotic weapon at a time
+        :raises ItemDoesNotBelongToCharacter: Raised when an item passed in does not belong to this character
         """
 
         item_to_equip.become_instanced()
@@ -377,7 +381,11 @@ class d2character():
 
         item_ids = []
         items_replaced = []
-        # TODO: Refresh items here before checking whether they can be equipped
+        refresh_futures = []
+        pool = ThreadPoolExecutor()
+        for item_to_equip in array_of_items_to_equip:
+            refresh_futures.append(pool.submit(item_to_equip.become_instanced))
+        wait(refresh_futures)
         for item_to_equip in array_of_items_to_equip:
             if item_to_equip.instance_id is not None and item_to_equip.can_equip and item_to_equip.owner_object == self:
                 item_ids.append(item_to_equip.instance_id)
@@ -397,7 +405,7 @@ class d2character():
         equip_request = requests.post(self.profile_object.client_object.root_endpoint + "/Destiny2/Actions/Items/EquipItems/", json=data, headers=self.profile_object.client_object.request_header)
         count = 0
         futures = []
-        pool = ThreadPoolExecutor()
+
         # Attempt to refresh items
         for item_to_equip in array_of_items_to_equip:
             futures.append(pool.submit(item_to_equip.become_instanced))
