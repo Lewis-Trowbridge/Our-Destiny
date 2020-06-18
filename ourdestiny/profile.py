@@ -1,7 +1,7 @@
 import ourdestiny
 import requests
 
-class d2profile():
+class d2profile:
 
     """
     A class used to represent a Destiny 2 profile, or a player, which owns multiple characters and several profile-level attributes
@@ -29,6 +29,10 @@ class d2profile():
     :vartype seasons: List[ourdestiny.d2season]
     :ivar current_season: A season object of the current season in the game
     :vartype current_season: ourdestiny.d2season
+    :ivar profile_records: A list of records associated with the current profile
+    :vartype profile_records: List[ourdestiny.d2record]
+    :ivar record_score: The total triumph score associated with this profile
+    :vartype record_score: integer
     """
     def __init__(self, client_object, profile_json):
         self.client_object = client_object
@@ -45,6 +49,9 @@ class d2profile():
         self.profile_inventory = []
         self.vault = []
         self.get_profile_inventories(profile_json["profileInventory"])
+        self.profile_records = []
+        self.record_score = 0
+        self.get_profile_records(profile_json["profileRecords"]["data"])
 
     def get_character_objects(self, characters_json):
 
@@ -78,6 +85,11 @@ class d2profile():
                     self.profile_inventory.append(ourdestiny.d2item(item, self))
         except KeyError:
             return
+
+    def get_profile_records(self, profile_triumph_json):
+        self.record_score = profile_triumph_json["score"]
+        for record_hash in profile_triumph_json["records"].keys():
+            self.profile_records.append(ourdestiny.d2record(profile_triumph_json["records"][record_hash], self.client_object.get_from_db(record_hash, "Record")))
 
     def get_instanced_item(self, instance_id):
 

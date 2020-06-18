@@ -8,3 +8,4 @@ from ourdestiny.progressions import *
 from ourdestiny.faction import *
 from ourdestiny.season import *
 from ourdestiny.activity import *
+from ourdestiny.record import *

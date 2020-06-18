@@ -1,6 +1,6 @@
 import ourdestiny
 
-class d2activity():
+class d2activity:
 
     """
     A class used to represent an activity, selectable from the director

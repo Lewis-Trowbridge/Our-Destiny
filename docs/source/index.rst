@@ -28,6 +28,7 @@ To understand more about these objects, go to the :doc:`objects` page
    faction
    progression
    season
+   record
 
    exceptions
 

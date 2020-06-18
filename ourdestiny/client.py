@@ -429,13 +429,8 @@ class d2client:
         if self.destiny_membership_id == "":
             self.get_my_destiny_id(platform)
         platform = self.get_membership_type_enum(platform)
-        params = {"components": "Profiles,ProfileInventories"}
-        profile_request = requests.get(
-            self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+self.destiny_membership_id,
-            headers=self.request_header,
-            params=params
-        )
-        return ourdestiny.d2profile(self, profile_request.json()["Response"])
+        profile_json = self.get_component_json(platform, self.destiny_membership_id, ["Profiles", "ProfileInventories", "Records"])
+        return ourdestiny.d2profile(self, profile_json["Response"])
 
     def get_bungienetuser_with_membership_id(self, membership_id, platform):
 
@@ -486,7 +481,7 @@ class d2client:
         search_request = requests.get(self.root_endpoint+"/Destiny2/SearchDestinyPlayer/"+platform+"/"+search_string,
                                       headers=self.request_header)
         destiny_membership_id = search_request.json()["Response"][0]["membershipId"]
-        params = {"components": "Profiles,ProfileInventories"}
+        params = {"components": "Profiles,ProfileInventories,Records"}
         profile_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+destiny_membership_id,
                                        headers=self.request_header,
                                        params=params)
