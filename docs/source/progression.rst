@@ -8,5 +8,7 @@ Progression
     :members:
     :show-inheritance:
 
-.. autofunction:: get_acquisition_behaviour_enum
-.. autofunction:: get_progression_scope_enum
+.. autoclass:: ProgressionRewardItemAcquisitionBehaviour
+    :members:
+.. autoclass:: ProgressionScope
+    :members:

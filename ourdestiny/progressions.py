@@ -1,6 +1,8 @@
 import ourdestiny
+from enum import IntEnum
 
-class d2progression():
+
+class d2progression:
 
     """
     The object that represents an in-game "progression", meaning any ranking or reputation system, such as Glory Ranks or destination factions.
@@ -29,7 +31,7 @@ class d2progression():
         self.name = progression_db_json["displayProperties"]["name"]
         self.description = progression_db_json["displayProperties"]["description"]
         self.visible = progression_db_json["visible"]
-        self.scope = get_progression_scope_enum(progression_db_json["scope"])
+        self.scope = ProgressionScope(progression_db_json["scope"])
         self.units = progression_db_json["displayProperties"]["displayUnitsName"]
         self.steps = progression_db_json["steps"]
         self.reward_items = []
@@ -56,44 +58,29 @@ class ProgressionRewardItem(ourdestiny.d2item):
     def __init__(self, progression_item_json, profile_object_in):
         super().__init__(progression_item_json, profile_object_in)
         self.rewarded_at_level = progression_item_json["rewardedAtProgressionLevel"]
-        self.acquisition_behaviour = get_acquisition_behaviour_enum(progression_item_json["acquisitionBehavior"])
+        self.acquisition_behaviour = ProgressionRewardItemAcquisitionBehaviour(progression_item_json["acquisitionBehavior"])
 
 
-def get_acquisition_behaviour_enum(acquisition_behaviour):
+class ProgressionRewardItemAcquisitionBehaviour(IntEnum):
 
-    """
-    Gets the value of an enum passed in - see https://bungie-net.github.io/multi/schema_Destiny-DestinyProgressionRewardItemAcquisitionBehavior.html
+    """An enumeration. See https://bungie-net.github.io/multi/schema_Destiny-DestinyProgressionRewardItemAcquisitionBehavior.html"""
 
-    :param acquisition_behaviour: The enumerator
-    :type acquisition_behaviour: integer
-    :return: The value of the enum
-    :rtype: string
-    """
-
-    acquisition_dict = {0: "Instant", 1: "Player claim required"}
-    return acquisition_dict[acquisition_behaviour]
+    #: Means that as soon as the progression is completed, the item will be acquired.
+    Instant = 0
+    #: Means that player action is required to claim the item.
+    PlayerClaimRequired = 1
 
 
-def get_progression_scope_enum(progression_scope):
+class ProgressionScope(IntEnum):
 
-    """
-    Gets the value of an enum passed in - see https://bungie-net.github.io/multi/schema_Destiny-DestinyProgressionScope.html
+    """An enumeration. See https://bungie-net.github.io/multi/schema_Destiny-DestinyProgressionScope.html"""
 
-    :param progression_scope: The enumerator
-    :type progression_scope: integer
-    :return: The value
-    :rtype: string
-    """
-
-    scope_dict = {
-        0: "Account",
-        1: "Character",
-        2: "Clan",
-        3: "Item",
-        4: "Implicit from equipment",
-        5: "Mapped",
-        6: "Mapped aggregate",
-        7: "Mapped stat",
-        8: "Mapped unlock value"
-    }
-    return scope_dict[progression_scope]
+    Account = 0
+    Character = 1
+    Clan = 2
+    Item = 3
+    ImplicitFromEquipment = 4
+    Mapped = 5
+    MappedAggregate = 6
+    MappedStat = 7
+    MappedUnlockValue = 8
