@@ -1,3 +1,4 @@
+import ourdestiny
 
 class d2record:
 
@@ -8,6 +9,8 @@ class d2record:
     :type record_request_json: dict
     :param record_data_json: The JSON obtained from the database containing generic data
     :type record_data_json: dict
+    :param profile_object: The profile object that owns this record
+    :type profile_object: ourdestiny.d2profile
 
     :ivar name: The name of the record
     :vartype name: string
@@ -19,15 +22,24 @@ class d2record:
     :vartype hash: integer
     :ivar state: The current state(s) of the record
     :vartype state: ourdestiny.d2recordstate
+    :ivar reward_items: The items rewarded when completing this triumph, if there are any
+    :vartype reward_items: list[ourdestiny.d2item]
     """
 
-    def __init__(self, record_request_json, record_data_json):
+    def __init__(self, record_request_json, record_data_json, profile_object):
+        self.owner_object = profile_object
         self.name = record_data_json["displayProperties"]["name"]
         self.description = record_data_json["displayProperties"]["description"]
         if record_data_json["displayProperties"]["hasIcon"]:
             self.icon = "https://bungie.net" + record_data_json["displayProperties"]["icon"]
         self.hash = record_data_json["hash"]
         self.state = d2recordstate(record_request_json["state"])
+        self.reward_items = []
+        try:
+            for item in record_data_json["rewardItems"]:
+                self.reward_items.append(ourdestiny.d2item(item, profile_object))
+        except KeyError:
+            pass
 
 
 class d2recordstate:

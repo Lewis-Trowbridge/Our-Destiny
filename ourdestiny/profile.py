@@ -89,7 +89,7 @@ class d2profile:
     def get_profile_records(self, profile_triumph_json):
         self.record_score = profile_triumph_json["score"]
         for record_hash in profile_triumph_json["records"].keys():
-            self.profile_records.append(ourdestiny.d2record(profile_triumph_json["records"][record_hash], self.client_object.get_from_db(record_hash, "Record")))
+            self.profile_records.append(ourdestiny.d2record(profile_triumph_json["records"][record_hash], self.client_object.get_from_db(record_hash, "Record"), self))
 
     def get_instanced_item(self, instance_id):
 
