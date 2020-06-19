@@ -422,9 +422,13 @@ class d2client:
         """
         Gets a profile object based on the platform and membership ID passed in.
 
-        :param platform:
-        :param destiny_membership_id:
-        :return:
+        :param platform: The name or enum of the platform the user is on
+        :type platform: string, integer
+        :param destiny_membership_id: The Destiny membership ID of the user that owns the desired profile
+        :type destiny_membership_id: string
+
+        :return: The d2profile object of the desired profile
+        :rtype: ourdestiny.d2profile
         """
         profile_json = self.get_component_json(platform,
                                                destiny_membership_id,
