@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, wait
 import ourdestiny
 
 
-class d2character():
+class d2character:
 
     """
     The object that represents an in-game character, containing attributes and methods related to character information
@@ -21,6 +21,8 @@ class d2character():
     :type character_progression_json: dict
     :param character_activities_json: The JSON containing the data for all of the character's available and current activities
     :type character_activities_json: dict
+    :param character_records_json: The JSON containing the data for character-specific records for this character
+    :type character_records_json: dict
 
     :ivar profile_object: The d2client object that created this character object
     :vartype profile_object: ourdestiny.d2profile
@@ -62,9 +64,11 @@ class d2character():
     :vartype progressions: List[ourdestiny.d2progression]
     :ivar factions: A list of d2faction objects containing data about factions
     :vartype factions: List[ourdestiny.d2faction]
+    :ivar records: A list of d2record objects specific to this character
+    :vartype records: list[ourdestiny.d2record]
     """
 
-    def __init__(self, profile_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json, character_activities_json):
+    def __init__(self, profile_object_in, character_info_json, character_inventory_json, character_equipped_json, character_progression_json, character_activities_json, character_records_json):
         self.profile_object = profile_object_in
         self.character_id = character_info_json["characterId"]
         self.membership_type = character_info_json["membershipType"]
@@ -108,6 +112,9 @@ class d2character():
         self.available_activities = []
         for available_activity in character_activities_json["availableActivities"]:
             self.available_activities.append(ourdestiny.d2activity(profile_object_in.client_object.get_from_db(available_activity["activityHash"], "Activity"), self.profile_object))
+        self.records = []
+        for record_hash in character_records_json["records"].keys():
+            self.records.append(ourdestiny.d2record(character_records_json["records"][record_hash], profile_object_in.client_object.get_from_db(record_hash, "Record"), profile_object_in))
 
     def get_equipped_item_by_name(self, item_name):
 
@@ -253,9 +260,15 @@ class d2character():
 
     def get_instanced_items_by_name(self, array_of_names):
 
+        futures = []
         with ThreadPoolExecutor() as pool:
             for name in array_of_names:
-                pool.submit(self.get_instanced_equipped_item_by_name, name)
+                futures.append(pool.submit(self.get_instanced_item_by_name, name))
+        wait(futures)
+        results = []
+        for future in futures:
+            results.append(future.result())
+        return results
 
     def get_equipped_item_by_index(self, item_index):
 

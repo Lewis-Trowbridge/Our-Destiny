@@ -45,7 +45,7 @@ class d2profile:
         for season_hash in profile_json["profile"]["data"]["seasonHashes"]:
             self.seasons.append(ourdestiny.d2season(self.client_object.get_hash_with_cursor(season_hash, world_cursor, "Season"), self))
         characters_json = self.client_object.get_component_json(self.membership_type, self.membership_id, [ourdestiny.ComponentType.Characters, ourdestiny.ComponentType.CharacterInventories, ourdestiny.ComponentType.CharacterEquipment, ourdestiny.ComponentType.CharacterProgression, ourdestiny.ComponentType.CharacterActivities])["Response"]
-        self.characters = self.get_character_objects(characters_json)
+        self.characters = self.get_character_objects(characters_json, profile_json["characterRecords"])
         self.profile_inventory = []
         self.vault = []
         self.get_profile_inventories(profile_json["profileInventory"])
@@ -53,7 +53,7 @@ class d2profile:
         self.record_score = 0
         self.get_profile_records(profile_json["profileRecords"]["data"])
 
-    def get_character_objects(self, characters_json):
+    def get_character_objects(self, characters_json, character_records_json):
 
         char_info_json = characters_json["characters"]["data"]
         try:
@@ -66,13 +66,15 @@ class d2profile:
         char_equip_json = characters_json["characterEquipment"]["data"]
         char_prog_json = characters_json["characterProgressions"]["data"]
         char_act_json = characters_json["characterActivities"]["data"]
+        char_rec_json = character_records_json["data"]
         char_list = []
         for char_id in char_info_json.keys():
             char_list.append(ourdestiny.d2character(self, char_info_json[char_id],
                                                     char_inv_json[char_id]["items"],
                                                     char_equip_json[char_id]["items"],
                                                     char_prog_json[char_id],
-                                                    char_act_json[char_id]))
+                                                    char_act_json[char_id],
+                                                    char_rec_json[char_id]))
         return char_list
 
     def get_profile_inventories(self, profileinventory_json):
