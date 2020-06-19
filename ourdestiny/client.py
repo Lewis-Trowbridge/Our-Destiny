@@ -5,6 +5,7 @@ import sqlite3
 import urllib.parse as urlparse
 import zipfile
 import requests
+from enum import IntEnum
 import ourdestiny
 
 
@@ -337,7 +338,7 @@ class d2client:
     def get_from_db(self, hashnum, table, database="mobileWorldContent"):
 
         """
-        Gets a JSON item from the local sqlite database, using a hash given from the API
+        Gets a JSON item from the local sqlite database, using a hash given from the API.
 
         :param hashnum: The hash number given by the API
         :type hashnum: string, integer
@@ -416,6 +417,22 @@ class d2client:
             headers=self.request_header)
         return search_request.json()
 
+    def get_profile(self, platform, destiny_membership_id):
+
+        """
+        Gets a profile object based on the platform and membership ID passed in.
+
+        :param platform:
+        :param destiny_membership_id:
+        :return:
+        """
+        profile_json = self.get_component_json(platform,
+                                               destiny_membership_id,
+                                               [ourdestiny.ComponentType.Profiles,
+                                                ourdestiny.ComponentType.ProfileInventories,
+                                                ourdestiny.ComponentType.Records])
+        return ourdestiny.d2profile(self, profile_json["Response"])
+
     def get_my_profile(self, platform):
         """
         Gets a profile object for the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html
@@ -429,13 +446,13 @@ class d2client:
         if self.destiny_membership_id == "":
             self.get_my_destiny_id(platform)
         platform = self.get_membership_type_enum(platform)
-        profile_json = self.get_component_json(platform, self.destiny_membership_id, ["Profiles", "ProfileInventories", "Records"])
-        return ourdestiny.d2profile(self, profile_json["Response"])
+        profile_object = self.get_profile(platform, self.destiny_membership_id)
+        return profile_object
 
     def get_bungienetuser_with_membership_id(self, membership_id, platform):
 
         """
-        A method to get a user's bungienetuser object using their membership ID and the platform they are on.
+        Gets a user's bungienetuser object using their membership ID and the platform they are on.
 
         :param membership_id: The membership ID for the desired user
         :type membership_id: string
@@ -449,9 +466,9 @@ class d2client:
         profile_request = requests.get(self.root_endpoint+"/User/GetMembershipsById/"+membership_id+"/"+platform, headers=self.request_header)
         return ourdestiny.bungienetuser(profile_request.json()["Response"]["bungieNetUser"])
 
-    def get_bunginetusers_with_search_name(self, search_string):
+    def get_bungienetusers_with_search_name(self, search_string):
         """
-        Gets a list of bungienetusers based on a search string inputted
+        Gets a list of bungienetusers based on a search string inputted.
 
         :param search_string: String to search for in usernames
         :type search_string: string
@@ -467,7 +484,7 @@ class d2client:
 
     def get_profile_with_search_string(self, search_string, platform):
         """
-        Gets a d2profile object based on a search string inputted
+        Gets a d2profile object based on a search string inputted.
 
         :param search_string: String to search for in usernames
         :type search_string: string
@@ -481,31 +498,69 @@ class d2client:
         search_request = requests.get(self.root_endpoint+"/Destiny2/SearchDestinyPlayer/"+platform+"/"+search_string,
                                       headers=self.request_header)
         destiny_membership_id = search_request.json()["Response"][0]["membershipId"]
-        params = {"components": "Profiles,ProfileInventories,Records"}
-        profile_request = requests.get(self.root_endpoint+"/Destiny2/"+platform+"/Profile/"+destiny_membership_id,
-                                       headers=self.request_header,
-                                       params=params)
-        return ourdestiny.d2profile(self, profile_request.json()["Response"])
+        profile_object = self.get_profile(platform, destiny_membership_id)
+        return profile_object
 
-    def get_component_json(self, platform, destiny_membership_id, array_of_enums):
+    def get_component_json(self, platform, destiny_membership_id, list_of_enums):
 
         """
-        Gets game-related profile information of the currently authenticated user - see https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html
+        Gets game-related profile information of the corresponding user of the Destiny membership ID - see https://bungie-net.github.io/multi/operation_get_Destiny2-GetProfile.html
 
-        :param platform: The name or enum of the platform the current user is on
+        :param platform: The name or enum of the platform the user is on
         :type platform: string, integer
-        :param array_of_enums: An array of enums - see https://bungie-net.github.io/multi/schema_Destiny-DestinyComponentType.html
-        :type array_of_enums: array - strings or integers
+        :param destiny_membership_id: The membership ID of the Destiny account being accessed
+        :type destiny_membership_id: string
+        :param list_of_enums: A list of enums - see https://bungie-net.github.io/multi/schema_Destiny-DestinyComponentType.html
+        :type list_of_enums: list[ourdestiny.ComponentType]
         :return: Profile data based on enums given - see https://bungie-net.github.io/multi/schema_Destiny-Responses-DestinyProfileResponse.html
         :rtype: dict
         """
 
         platform = self.get_membership_type_enum(platform)
         collated_enums = ""
-        for enum in array_of_enums:
-            collated_enums = collated_enums + enum + ","
+        for enum in list_of_enums:
+            collated_enums += str(enum.value) + ","
         params = {"components": collated_enums}
         search_request = requests.get(
             self.root_endpoint + "/Destiny2/" + platform + "/Profile/" + destiny_membership_id,
             headers=self.request_header, params=params)
         return search_request.json()
+
+
+class ComponentType(IntEnum):
+
+    """An enumeration. See https://bungie-net.github.io/multi/schema_Destiny-DestinyComponentType.html"""
+
+    Profiles = 100
+    VendorReceipts = 101
+    ProfileInventories = 102
+    ProfileCurrencies = 103
+    ProfileProgression = 104
+    PlatformSilver = 105
+    Characters = 200
+    CharacterInventories = 201
+    CharacterProgression = 202
+    CharacterRenderData = 203
+    CharacterActivities = 204
+    CharacterEquipment = 205
+    ItemInstances = 300
+    ItemObjectives = 301
+    ItemPerks = 302
+    ItemRenderData = 303
+    ItemStats = 304
+    ItemSockets = 305
+    ItemTalentGrids = 306
+    ItemCommonData = 307
+    ItemPlugStates = 308
+    ItemPlugObjective = 309
+    ItemReusablePlugs = 310
+    Vendors = 400
+    VendorCategories = 401
+    VendorSales = 402
+    Kiosks = 500
+    CurrencyLookups = 600
+    PresentationNodes = 700
+    Collectibles = 800
+    Records = 900
+    Transitory = 1000
+    Metrics = 1100
