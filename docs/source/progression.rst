@@ -3,6 +3,7 @@ Progression
 
 .. py:currentmodule:: ourdestiny
 .. autoclass:: d2progression
+    :show-inheritance:
     :members:
 .. autoclass:: ProgressionRewardItem
     :members:

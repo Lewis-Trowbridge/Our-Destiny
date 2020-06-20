@@ -1,6 +1,7 @@
 import ourdestiny
 
-class d2item():
+
+class d2item(ourdestiny.d2displayproperties):
 
     """
     The object form of an in-game item. This can be anything that can be equipped or put in your inventory - guns, armour, sparrows, subclasses, even bounties and quests.
@@ -53,6 +54,10 @@ class d2item():
     """
 
     def __init__(self, item_request_json, profile_object_in, character_object_in=None):
+        self.profile_object = profile_object_in
+        self.item_hash = item_request_json["itemHash"]
+        item_data_json = self.profile_object.client_object.get_from_db(self.item_hash, "InventoryItem")
+        super().__init__(item_data_json["displayProperties"])
         self.is_equipped = False
         self.can_equip = False
         self.is_instanced_item = False
@@ -61,22 +66,15 @@ class d2item():
         self.attack = None
         self.quantity = item_request_json["quantity"]
         self.owner_object = character_object_in
-        self.profile_object = profile_object_in
-        self.item_hash = item_request_json["itemHash"]
-        item_data_json = self.profile_object.client_object.get_from_db(self.item_hash, "InventoryItem")
         try:
             self.bucket_info = self.profile_object.client_object.get_from_db(item_request_json["bucketHash"], "InventoryBucket")
         except KeyError:
             self.bucket_info = None
-        self.description = item_data_json["displayProperties"]["description"]
-        self.name = item_data_json["displayProperties"]["name"]
         self.type = item_data_json["itemTypeDisplayName"]
         try:
             self.tier = item_data_json["inventory"]["tierTypeName"]
         except KeyError:
             self.tier = None
-        if item_data_json["displayProperties"]["hasIcon"]:
-            self.icon_url = "https://www.bungie.net" + item_data_json["displayProperties"]["icon"]
         try:
             self.screenshot_url = "https://www.bungie.net" + item_data_json["screenshot"]
         except KeyError:

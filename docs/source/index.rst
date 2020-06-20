@@ -19,6 +19,7 @@ To understand more about these objects, go to the :doc:`objects` page
 
    intro
    objects
+   common
    client
    bungienetuser
    profile

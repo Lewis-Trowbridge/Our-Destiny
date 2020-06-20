@@ -1,6 +1,6 @@
 import ourdestiny
 
-class d2record:
+class d2record(ourdestiny.d2displayproperties):
 
     """
     A class used to represent a record (or as they are normally known in game, Triumph).
@@ -27,11 +27,8 @@ class d2record:
     """
 
     def __init__(self, record_request_json, record_data_json, profile_object):
+        super().__init__(record_data_json["displayProperties"])
         self.owner_object = profile_object
-        self.name = record_data_json["displayProperties"]["name"]
-        self.description = record_data_json["displayProperties"]["description"]
-        if record_data_json["displayProperties"]["hasIcon"]:
-            self.icon = "https://bungie.net" + record_data_json["displayProperties"]["icon"]
         self.hash = record_data_json["hash"]
         self.state = d2recordstate(record_request_json["state"])
         self.reward_items = []

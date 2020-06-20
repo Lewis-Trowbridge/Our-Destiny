@@ -2,7 +2,7 @@ import datetime
 import ourdestiny
 
 
-class d2season:
+class d2season(ourdestiny.d2displayproperties):
 
     """
     A class used to represent a season
@@ -27,8 +27,7 @@ class d2season:
     """
 
     def __init__(self, season_json, profile_object):
-        self.name = season_json["displayProperties"]["name"]
-        self.description = season_json["displayProperties"]["description"]
+        super().__init__(season_json["displayProperties"])
         self.season_number = season_json["seasonNumber"]
         self.start_date = datetime.datetime.strptime(season_json["startDate"], "%Y-%m-%dT%H:%M:%SZ")
         try:
@@ -39,7 +38,8 @@ class d2season:
         # TODO: Create a class that inherits from item for artifacts for special attributes
         self.artifact_item = ourdestiny.d2item({"itemHash": season_json["artifactItemHash"], "quantity": 0}, profile_object)
 
-class d2seasonpass:
+
+class d2seasonpass(ourdestiny.d2displayproperties):
 
     """
     A class used to represent a season pass
@@ -60,7 +60,7 @@ class d2seasonpass:
     """
 
     def __init__(self, season_pass_json, profile_object):
-        self.name = season_pass_json["displayProperties"]["name"]
+        super().__init__(season_pass_json["displayProperties"])
         self.hash = season_pass_json["hash"]
         if season_pass_json["rewardProgressionHash"] != 0:
             self.reward_progression = ourdestiny.d2progression(profile_object.client_object.get_from_db(season_pass_json["rewardProgressionHash"], "Progression"), profile_object)

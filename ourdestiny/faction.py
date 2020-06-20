@@ -1,7 +1,7 @@
-from ourdestiny import d2progression, d2item
+import ourdestiny
 
 
-class d2faction():
+class d2faction(ourdestiny.d2displayproperties):
 
     """
     The object that represents an in-game faction, and contains all of the data about both that faction and your
@@ -43,9 +43,8 @@ class d2faction():
     """
 
     def __init__(self, faction_request_json, faction_data_json, character_object):
+        super().__init__(faction_data_json["displayProperties"])
         self.character_object = character_object
-        self.name = faction_data_json["displayProperties"]["name"]
-        self.description = faction_data_json["displayProperties"]["description"]
         self.level = faction_request_json["level"]
         self.level_cap = faction_request_json["levelCap"]
         self.next_level_at = faction_request_json["nextLevelAt"]
@@ -54,6 +53,4 @@ class d2faction():
         self.daily_limit = faction_request_json["dailyLimit"]
         self.weekly_progress = faction_request_json["weeklyProgress"]
         self.weekly_limit = faction_request_json["weeklyLimit"]
-        if faction_data_json["displayProperties"]["hasIcon"]:
-            self.icon = "https://bungie.net" + faction_data_json["displayProperties"]["icon"]
-        self.progression = d2progression(self.character_object.profile_object.client_object.get_from_db(faction_data_json["progressionHash"], "Progression"), self.character_object.profile_object)
+        self.progression = ourdestiny.d2progression(self.character_object.profile_object.client_object.get_from_db(faction_data_json["progressionHash"], "Progression"), self.character_object.profile_object)

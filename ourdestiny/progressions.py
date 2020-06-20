@@ -2,7 +2,7 @@ import ourdestiny
 from enum import IntEnum
 
 
-class d2progression:
+class d2progression(ourdestiny.d2displayproperties):
 
     """
     The object that represents an in-game "progression", meaning any ranking or reputation system, such as Glory Ranks or destination factions.
@@ -28,8 +28,7 @@ class d2progression:
     """
 
     def __init__(self, progression_db_json, profile_object_in):
-        self.name = progression_db_json["displayProperties"]["name"]
-        self.description = progression_db_json["displayProperties"]["description"]
+        super().__init__(progression_db_json["displayProperties"])
         self.visible = progression_db_json["visible"]
         self.scope = ProgressionScope(progression_db_json["scope"])
         self.units = progression_db_json["displayProperties"]["displayUnitsName"]

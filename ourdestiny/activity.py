@@ -1,6 +1,6 @@
 import ourdestiny
 
-class d2activity:
+class d2activity(ourdestiny.d2displayproperties):
 
     """
     A class used to represent an activity, selectable from the director
@@ -35,18 +35,13 @@ class d2activity:
     """
 
     def __init__(self, activity_json, profile_object):
-        self.name = activity_json["displayProperties"]["name"]
-        self.description = activity_json["displayProperties"]["description"]
+        super().__init__(activity_json["displayProperties"])
         self.hash = activity_json["hash"]
         self.is_pvp = activity_json["isPvP"]
         self.is_playlist = activity_json["isPlaylist"]
         self.activity_level = activity_json["activityLevel"]
         self.tier = activity_json["tier"]
         self.light_level = activity_json["activityLightLevel"]
-        if activity_json["displayProperties"]["hasIcon"]:
-            self.icon = "https://bungie.net" + activity_json["displayProperties"]["icon"]
-        else:
-            self.icon = None
         self.pgcr_image = "https://bungie.net" + activity_json["pgcrImage"]
         self.rewards = []
         for reward_tier in activity_json["rewards"]:
@@ -57,7 +52,7 @@ class d2activity:
         self.activity_type = d2activitytype(profile_object.client_object.get_from_db(activity_json["activityTypeHash"], "ActivityType"))
 
 
-class d2activitytype:
+class d2activitytype(ourdestiny.d2displayproperties):
 
     """
     A class used to represent an activity type
@@ -76,13 +71,5 @@ class d2activitytype:
     """
 
     def __init__(self, activity_type_json):
-        self.name = activity_type_json["displayProperties"]["name"]
-        try:
-            self.description = activity_type_json["displayProperties"]["description"]
-        except KeyError:
-            self.description = None
+        super().__init__(activity_type_json["displayProperties"])
         self.hash = activity_type_json["hash"]
-        if activity_type_json["displayProperties"]["hasIcon"]:
-            self.icon = "https://bungie.net" + activity_type_json["displayProperties"]["icon"]
-        else:
-            self.icon = None
