@@ -2,7 +2,7 @@ import datetime
 import ourdestiny
 
 
-class d2season():
+class d2season:
 
     """
     A class used to represent a season
@@ -22,7 +22,8 @@ class d2season():
     :vartype start_date: datetime
     :ivar end_date: The end date of this season - can be none where the season's end date is not confirmed yet
     :vartype end_date: datetime
-
+    :ivar artifact_item: The artifact of this season
+    :vartype artifact_item: ourdestiny.d2item
     """
 
     def __init__(self, season_json, profile_object):
@@ -35,9 +36,10 @@ class d2season():
         except KeyError:
             self.end_date = None
         self.season_pass = d2seasonpass(profile_object.client_object.get_from_db(season_json["seasonPassHash"], "SeasonPass"), profile_object)
+        # TODO: Create a class that inherits from item for artifacts for special attributes
+        self.artifact_item = ourdestiny.d2item({"itemHash": season_json["artifactItemHash"], "quantity": 0}, profile_object)
 
-
-class d2seasonpass():
+class d2seasonpass:
 
     """
     A class used to represent a season pass
