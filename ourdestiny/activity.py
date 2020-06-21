@@ -1,5 +1,6 @@
 import ourdestiny
 
+
 class d2activity(ourdestiny.d2displayproperties):
 
     """
@@ -32,6 +33,8 @@ class d2activity(ourdestiny.d2displayproperties):
     :vartype pgcr_image: string
     :ivar rewards: The potential rewards for this activity, split into tiers as given by the API
     :vartype rewards: List[List[ourdestiny.d2item]]
+    :ivar modifiers: The potential modifiers for this activity
+    :vartype modifiers: list[ourdestiny.d2activitymodifier]
     """
 
     def __init__(self, activity_json, profile_object):
@@ -49,6 +52,9 @@ class d2activity(ourdestiny.d2displayproperties):
             self.rewards.append(reward_tier_list)
             for reward_item in reward_tier["rewardItems"]:
                 reward_tier_list.append(ourdestiny.d2item(reward_item, profile_object))
+        self.modifiers = []
+        for modifier in activity_json["modifiers"]:
+            self.modifiers.append(d2activitymodifier(profile_object.client_object.get_from_db(modifier["activityModifierHash"], "ActivityModifier")))
         self.activity_type = d2activitytype(profile_object.client_object.get_from_db(activity_json["activityTypeHash"], "ActivityType"))
 
 
@@ -73,3 +79,28 @@ class d2activitytype(ourdestiny.d2displayproperties):
     def __init__(self, activity_type_json):
         super().__init__(activity_type_json["displayProperties"])
         self.hash = activity_type_json["hash"]
+
+
+class d2activitymodifier(ourdestiny.d2displayproperties):
+
+    """
+    A class used to represent a modifier for an activity
+
+    :param activity_modifier_json: The JSON of the activity modifier obtained from the database
+    :type activity_modifier_json: dict
+
+    :ivar name: The name of the modifier
+    :vartype name: string
+    :ivar description: The description of the modifier
+    :vartype description: string
+    :ivar icon: The URL of the icon of the modifier
+    :vartype icon: string
+    :ivar icon_sequences: A list of lists, each containing URLs of different icons to be used in different contexts
+    :vartype icon_sequences: list[list[string]]
+    :ivar hash: The hash of the activity type
+    :type hash: integer
+    """
+
+    def __init__(self, activity_modifier_json):
+        super().__init__(activity_modifier_json["displayProperties"])
+        self.hash = activity_modifier_json["hash"]
