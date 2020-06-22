@@ -24,6 +24,8 @@ class d2record(ourdestiny.d2displayproperties):
     :vartype state: ourdestiny.d2recordstate
     :ivar reward_items: The items rewarded when completing this triumph, if there are any
     :vartype reward_items: list[ourdestiny.d2item]
+    :ivar objectives: A list of objectives to complete the record
+    :vartype objectives: list[ourdestiny.d2recordobjective]
     """
 
     def __init__(self, record_request_json, record_data_json, profile_object):
@@ -37,6 +39,73 @@ class d2record(ourdestiny.d2displayproperties):
                 self.reward_items.append(ourdestiny.d2item(item, profile_object))
         except KeyError:
             pass
+        # Records can have either individual or interval objectives, so look for both
+        self.objectives = []
+        try:
+            for objective_json in record_request_json["objectives"]:
+                self.objectives.append(d2recordobjective(objective_json, profile_object.client_object.get_from_db(objective_json["objectiveHash"], "Objective")))
+        except KeyError:
+            pass
+        try:
+            for objective_json in record_request_json["intervalObjectives"]:
+                self.objectives.append(d2recordobjective(objective_json, profile_object.client_object.get_from_db(objective_json["objectiveHash"], "Objective")))
+        except KeyError:
+            pass
+
+class d2recordobjective(ourdestiny.d2displayproperties):
+
+    """
+    A class used to represent an objective of a record
+
+    :param objective_request_json: The JSON obtained from the API containing live data about state of completion
+    :type objective_request_json: dict
+    :param objective_data_json: The JSON obtained from the database containing generic definitions of the objective
+    :type objective_request_json: dict
+
+    :ivar name: Name of the objective, if it has one
+    :vartype name: string
+    :ivar description: Description of the objective, if it has one
+    :vartype description: string
+    :ivar progress_description: Text to describe the progress bar
+    :vartype progress_description: string
+    :ivar hash: The hash of the objective
+    :vartype hash: integer
+    :ivar progress: The current progress on this objective
+    :vartype progress: integer
+    :ivar completion_value: The value that must be reached for the objective to be complete
+    :vartype completion_value: integer
+    :ivar complete: Displays whether the objective is complete
+    :vartype complete: bool
+    :ivar visible: Displays whether the objective should be visible
+    :vartype visible: bool
+    :ivar minimum_visibility_threshold: The lowest value the current progress should be before this objective is displayed
+    :vartype minimum_visibility_threshold: integer
+    :ivar allow_negative_value: Displays whether a negative value is allowed on this objecitve or not
+    :vartype allow_negative_value: bool
+    :ivar allow_value_change_when_completed: Displays whether value can change when the objective is completed or not
+    :vartype allow_value_change_when_completed: bool
+    :ivar allow_overcompletion: Displays whether progress will continue past the point of completion or not
+    :vartype allow_overcompletion: bool
+    :ivar show_value_on_complete: Displays whether progress should be displayed once the objective is complete
+    :vartype show_value_on_complete: bool
+    :ivar is_counting_downward: Displays whether the objective counts downwards or not
+    :vartype is_counting_downward: bool
+    """
+
+    def __init__(self, objective_request_json, objective_data_json):
+        super().__init__(objective_data_json["displayProperties"])
+        self.progress_description = objective_data_json["progressDescription"]
+        self.hash = objective_request_json["objectiveHash"]
+        self.progress = objective_request_json["progress"]
+        self.completion_value = objective_request_json["completionValue"]
+        self.complete = objective_request_json["complete"]
+        self.visible = objective_request_json["visible"]
+        self.minimum_visibility_threshold = objective_data_json["minimumVisibilityThreshold"]
+        self.allow_negative_value = objective_data_json["allowNegativeValue"]
+        self.allow_value_change_when_completed = objective_data_json["allowValueChangeWhenCompleted"]
+        self.allow_overcompletion = objective_data_json["allowOvercompletion"]
+        self.show_value_on_complete = objective_data_json["showValueOnComplete"]
+        self.is_counting_downward = objective_data_json["isCountingDownward"]
 
 
 class d2recordstate:
