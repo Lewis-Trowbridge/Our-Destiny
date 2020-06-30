@@ -29,8 +29,8 @@ class d2item(ourdestiny.d2displayproperties):
     :vartype icon_url: string
     :ivar screenshot_url: The URL of the in-game screenshot of the item normally used for backgrounds to items (if it has one)
     :vartype screenshot_url: string
-    :ivar lore: The text in the lore tab of the item (if it has one)
-    :vartype lore: string
+    :ivar lore: The lore in the lore tab of the item (if it has one)
+    :vartype lore: ourdestiny.d2lore
     :ivar instance_id: The unique ID for this item that tracks its instanced data
     :vartype instance_id: string
     :ivar perks: A list of dicts that contain the name, description, and URL of the icon for each perk, as well as boolean values for whether it is active and visible - empty when not instanced, fills when instanced
@@ -80,7 +80,7 @@ class d2item(ourdestiny.d2displayproperties):
         except KeyError:
             self.screenshot_url = None
         try:
-            self.lore = self.profile_object.client_object.get_from_db(item_data_json["loreHash"], "Lore")["displayProperties"]["description"]
+            self.lore = ourdestiny.d2lore(self.profile_object.client_object.get_from_db(item_data_json["loreHash"], "Lore"))
         except KeyError:
             self.lore = None
         try:

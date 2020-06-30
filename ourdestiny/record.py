@@ -26,6 +26,8 @@ class d2record(ourdestiny.d2displayproperties):
     :vartype reward_items: list[ourdestiny.d2item]
     :ivar objectives: A list of objectives to complete the record
     :vartype objectives: list[ourdestiny.d2recordobjective]
+    :ivar lore: The lore of the record if it is a lore triumph
+    :vartype lore: ourdestiny.d2lore
     """
 
     def __init__(self, record_request_json, record_data_json, profile_object):
@@ -51,6 +53,10 @@ class d2record(ourdestiny.d2displayproperties):
                 self.objectives.append(d2recordobjective(objective_json, profile_object.client_object.get_from_db(objective_json["objectiveHash"], "Objective")))
         except KeyError:
             pass
+        try:
+            self.lore = ourdestiny.d2lore(profile_object.client_object.get_from_db(record_data_json["loreHash"], "Lore"))
+        except KeyError:
+            self.lore = None
 
 class d2recordobjective(ourdestiny.d2displayproperties):
 

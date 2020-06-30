@@ -26,6 +26,7 @@ To understand more about these objects, go to the :doc:`objects` page
    character
    activity
    item
+   lore
    faction
    progression
    season
