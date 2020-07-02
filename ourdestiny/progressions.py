@@ -21,13 +21,35 @@ class d2progression(ourdestiny.d2displayproperties):
     :ivar steps: A list of dicts each with information about steps for progressing through ranks of progression, such as individual glory ranks
     :vartype steps: List[dict]
     :ivar reward_items: A list of reward items
+    :vartype reward_items: list[ourdestiny.ProgressionRewardItem]
     :ivar visible: A boolean variable displaying whether this should be visible or not
-    :type visible: bool
+    :vartype visible: bool
     :ivar scope: The scope of the progression
-    :type scope: string
+    :vartype scope: ProgressionScope
+    :ivar daily_progress: The current daily progress made on this progression
+    :vartype daily_progress: integer
+    :ivar daily_limit: The limit of progress that can be made on this progression in a day
+    :vartype daily_limit: integer
+    :ivar weekly_progress: The current weekly progress made on this progression
+    :vartype weekly_progress: integer
+    :ivar weekly_limit: The limit of progress that can be made on this progression in a week
+    :vartype weekly_limit: integer
+    :ivar current_progress: The current total progress made on this progression
+    :vartype current_progress: integer
+    :ivar level: The current level of this progression
+    :vartype level: integer
+    :ivar level_cap: The level cap of this progression
+    :vartype level_cap: integer
+    :ivar step_index: The index of the current step
+    :vartype step_index: integer
+    :ivar current_step: If it is accessible, the step the character is currently on
+    :vartype current_step: dict
+    :ivar current_reset_count: If the progression can be reset, the number of times it has been reset
+    :vartype current_reset_count: integer
+    :ivar season_resets: Th
     """
 
-    def __init__(self, progression_db_json, profile_object_in):
+    def __init__(self, progression_db_json, profile_object_in, progression_live_json=None):
         super().__init__(progression_db_json["displayProperties"])
         self.visible = progression_db_json["visible"]
         self.scope = ProgressionScope(progression_db_json["scope"])
@@ -36,6 +58,39 @@ class d2progression(ourdestiny.d2displayproperties):
         self.reward_items = []
         for reward_item in progression_db_json["rewardItems"]:
             self.reward_items.append(ProgressionRewardItem(reward_item, profile_object_in))
+        if progression_live_json is not None:
+            self.daily_progress = progression_live_json["dailyProgress"]
+            self.daily_limit = progression_live_json["dailyLimit"]
+            self.weekly_progress = progression_live_json["weeklyProgress"]
+            self.weekly_limit = progression_live_json["weeklyLimit"]
+            self.current_progress = progression_live_json["currentProgress"]
+            self.level = progression_live_json["level"]
+            self.level_cap = progression_live_json["levelCap"]
+            self.step_index = progression_live_json["stepIndex"]
+            try:
+                self.current_step = self.steps[self.step_index]
+            except IndexError:
+                self.current_step = None
+            self.progress_to_next_level = progression_live_json["progressToNextLevel"]
+            self.next_level_at = progression_live_json["nextLevelAt"]
+            try:
+                self.current_reset_count = progression_live_json["currentResetCount"]
+            except KeyError:
+                self.current_reset_count = None
+        else:
+            self.daily_progress = None
+            self.daily_limit = None
+            self.weekly_progress = None
+            self.weekly_limit = None
+            self.current_progress = None
+            self.level = None
+            self.level_cap = None
+            self.step_index = None
+            self.current_step = None
+            self.progress_to_next_level = None
+            self.next_level_at = None
+            self.current_reset_count = None
+            self.season_resets = None
 
 
 class ProgressionRewardItem(ourdestiny.d2item):
