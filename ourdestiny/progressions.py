@@ -19,7 +19,7 @@ class d2progression(ourdestiny.d2displayproperties):
     :ivar units: The units used for how this progression counts progress
     :vartype units: string
     :ivar steps: A list of dicts each with information about steps for progressing through ranks of progression, such as individual glory ranks
-    :vartype steps: List[dict]
+    :vartype steps: List[d2progressionstep]
     :ivar reward_items: A list of reward items
     :vartype reward_items: list[ourdestiny.ProgressionRewardItem]
     :ivar visible: A boolean variable displaying whether this should be visible or not
@@ -43,10 +43,9 @@ class d2progression(ourdestiny.d2displayproperties):
     :ivar step_index: The index of the current step
     :vartype step_index: integer
     :ivar current_step: If it is accessible, the step the character is currently on
-    :vartype current_step: dict
+    :vartype current_step: d2progressionstep
     :ivar current_reset_count: If the progression can be reset, the number of times it has been reset
     :vartype current_reset_count: integer
-    :ivar season_resets: Th
     """
 
     def __init__(self, progression_db_json, profile_object_in, progression_live_json=None):
@@ -54,7 +53,9 @@ class d2progression(ourdestiny.d2displayproperties):
         self.visible = progression_db_json["visible"]
         self.scope = ProgressionScope(progression_db_json["scope"])
         self.units = progression_db_json["displayProperties"]["displayUnitsName"]
-        self.steps = progression_db_json["steps"]
+        self.steps = []
+        for step in progression_db_json["steps"]:
+            self.steps.append(d2progressionstep(step))
         self.reward_items = []
         for reward_item in progression_db_json["rewardItems"]:
             self.reward_items.append(ProgressionRewardItem(reward_item, profile_object_in))
@@ -91,6 +92,27 @@ class d2progression(ourdestiny.d2displayproperties):
             self.next_level_at = None
             self.current_reset_count = None
             self.season_resets = None
+
+
+class d2progressionstep:
+
+    """
+    An object representing a step in a progression
+
+    :param step_json: A JSON containing data about the step in question
+
+    :ivar step_name: The name of the step, if it has one
+    :vartype step_name: string
+    :ivar display_effect_type: The display effect type that should be used for this progression
+    :vartype display_effect_type: ProgressionStepDisplayEffect
+    :ivar progress_total: The current progress made on this step
+    :vartype progress_total: integer
+    """
+
+    def __init__(self, step_json):
+        self.step_name = step_json["stepName"]
+        self.display_effect_type = ProgressionStepDisplayEffect(step_json["displayEffectType"])
+        self.progress_total = step_json["progressTotal"]
 
 
 class ProgressionRewardItem(ourdestiny.d2item):
@@ -138,3 +160,12 @@ class ProgressionScope(IntEnum):
     MappedAggregate = 6
     MappedStat = 7
     MappedUnlockValue = 8
+
+
+class ProgressionStepDisplayEffect(IntEnum):
+
+    """An enumeration. See https://bungie-net.github.io/multi/schema_Destiny-DestinyProgressionStepDisplayEffect.html"""
+
+    Nnone = 0
+    Character = 1
+    Item = 2
