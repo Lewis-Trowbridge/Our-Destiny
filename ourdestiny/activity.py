@@ -23,8 +23,6 @@ class d2activity(ourdestiny.d2displayproperties):
     :vartype is_pvp: bool
     :ivar is_playlist: Displays whether or not the activity is a playlist
     :vartype is_playlist: bool
-    :ivar activity_level: The recommended level to play this activity - somewhat outdated since Forsaken
-    :vartype activity_level: integer
     :ivar light_level: The recommended light level to play this activity
     :vartype light_level: integer
     :ivar tier: The difficulty tier of the activity
@@ -42,7 +40,6 @@ class d2activity(ourdestiny.d2displayproperties):
         self.hash = activity_json["hash"]
         self.is_pvp = activity_json["isPvP"]
         self.is_playlist = activity_json["isPlaylist"]
-        self.activity_level = activity_json["activityLevel"]
         self.tier = activity_json["tier"]
         self.light_level = activity_json["activityLightLevel"]
         self.pgcr_image = "https://bungie.net" + activity_json["pgcrImage"]
